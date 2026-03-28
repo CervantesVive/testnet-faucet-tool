@@ -221,6 +221,82 @@ def status(family):
 
 
 @main.command()
+@click.option("--family", help="Filter by chain family")
+@click.option("--threshold", type=float, default=None, help="Low-balance threshold (default: 2x drip_amount)")
+def refill(family, threshold):
+    """Check faucet balances and flag wallets that need refilling."""
+    from rich.table import Table
+
+    assets = get_all_assets()
+    native_assets = {k: v for k, v in assets.items() if v.get("native_asset")}
+    if family:
+        native_assets = {k: v for k, v in native_assets.items() if v.get("family") == family}
+
+    table = Table(title="Faucet Refill Status")
+    table.add_column("Asset")
+    table.add_column("Blockchain")
+    table.add_column("Balance")
+    table.add_column("Threshold")
+    table.add_column("Status")
+    table.add_column("Action")
+
+    ok_count = 0
+    low_count = 0
+    error_count = 0
+
+    for asset_id in sorted(native_assets):
+        cfg = native_assets[asset_id]
+        blockchain = cfg.get("blockchain", "")
+        drip_amount = cfg.get("drip_amount", "0")
+        asset_threshold = threshold if threshold is not None else 2.0 * float(drip_amount)
+
+        try:
+            handler = get_handler(asset_id)
+            balances = asyncio.run(handler.get_faucet_balance())
+        except Exception as e:
+            error_count += 1
+            table.add_row(
+                asset_id, blockchain, "N/A", f"{asset_threshold:.4g}",
+                "[red]ERROR[/red]", f"[red]{e}[/red]",
+            )
+            console.print(f"ERROR {asset_id}")
+            continue
+
+        # Use the first balance value from the dict
+        balance_str = next(iter(balances.values()), "N/A") if balances else "N/A"
+
+        try:
+            balance_val = float(balance_str)
+        except (ValueError, TypeError):
+            error_count += 1
+            table.add_row(
+                asset_id, blockchain, balance_str, f"{asset_threshold:.4g}",
+                "[red]ERROR[/red]", f"[red]{balance_str}[/red]",
+            )
+            console.print(f"ERROR {asset_id}")
+            continue
+
+        if balance_val >= asset_threshold:
+            ok_count += 1
+            status_label = "[green]OK[/green]"
+            action = ""
+            console.print(f"OK {asset_id}")
+        else:
+            low_count += 1
+            status_label = "[yellow]LOW[/yellow]"
+            action = f"[yellow]Fund with >= {asset_threshold - balance_val:.4g} to reach threshold[/yellow]"
+            console.print(f"LOW {asset_id}")
+
+        table.add_row(
+            asset_id, blockchain, f"{balance_val:.4g}", f"{asset_threshold:.4g}",
+            status_label, action,
+        )
+
+    console.print(table)
+    console.print(f"\nSummary: {ok_count} OK, {low_count} LOW, {error_count} ERROR")
+
+
+@main.command()
 @click.argument("family")
 def init(family):
     """Initialize faucet wallets for FAMILY — derive addresses and print for manual funding."""
