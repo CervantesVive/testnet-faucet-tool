@@ -32,7 +32,7 @@ def test_drip_tsol_dry_run():
     assert "Dry run" in result.output or "dry" in result.output.lower()
 
 
-def test_drip_tsol_mocked(monkeypatch):
+def test_drip_tsol_mocked(monkeypatch, tmp_path):
     # Patch SolanaHandler.drip to return a success DripResult without hitting devnet
     # Note: test must be synchronous — CLI uses asyncio.run() which can't nest event loops
     from handlers.base import DripResult
@@ -50,8 +50,7 @@ def test_drip_tsol_mocked(monkeypatch):
 
     monkeypatch.setattr(SolanaHandler, "drip", mock_drip)
     import core.rate_limiter as rl
-    import tempfile, pathlib, uuid
-    monkeypatch.setattr(rl, "DB_PATH", pathlib.Path(tempfile.gettempdir()) / f"test_faucet_{uuid.uuid4().hex}.db")
+    monkeypatch.setattr(rl, "DB_PATH", tmp_path / "test_faucet.db")
 
     runner = CliRunner()
     result = runner.invoke(main, ["drip", "TSOL", "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"])
