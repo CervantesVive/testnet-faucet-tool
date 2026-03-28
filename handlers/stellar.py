@@ -28,6 +28,15 @@ class StellarHandler(BaseHandler):
             "Stellar wallet not configured: set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY"
         )
 
+    def _get_network_passphrase(self) -> str:
+        """Return the Stellar network passphrase from config or derived from network name."""
+        if "network_passphrase" in self.config:
+            return self.config["network_passphrase"]
+        network = self.config.get("network", "testnet").lower()
+        if network in ("mainnet", "public"):
+            return Network.PUBLIC_NETWORK_PASSPHRASE
+        return Network.TESTNET_NETWORK_PASSPHRASE
+
     def _get_server(self) -> Server:
         """Build and return a Stellar Server from chain config."""
         return Server(horizon_url=self.config["rpc_url"])
@@ -108,7 +117,7 @@ class StellarHandler(BaseHandler):
         transaction = (
             TransactionBuilder(
                 source_account=source_account,
-                network_passphrase=Network.TESTNET_NETWORK_PASSPHRASE,
+                network_passphrase=self._get_network_passphrase(),
                 base_fee=100,
             )
             .append_payment_op(
@@ -159,7 +168,7 @@ class StellarHandler(BaseHandler):
         transaction = (
             TransactionBuilder(
                 source_account=source_account,
-                network_passphrase=Network.TESTNET_NETWORK_PASSPHRASE,
+                network_passphrase=self._get_network_passphrase(),
                 base_fee=100,
             )
             .append_payment_op(

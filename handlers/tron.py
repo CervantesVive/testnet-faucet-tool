@@ -105,7 +105,7 @@ class TronHandler(BaseHandler):
 
         Tron addresses start with 'T' and are 34 base58 characters.
         """
-        return bool(re.match(r'^T[A-Za-z0-9]{33}$', address))
+        return bool(re.match(r'^T[1-9A-HJ-NP-Za-km-z]{33}$', address))
 
     async def get_faucet_balance(self) -> dict[str, str]:
         """Return current faucet wallet TRX balance.
