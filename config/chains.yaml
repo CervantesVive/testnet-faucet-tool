@@ -1,0 +1,21 @@
+HTETH:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  native_asset: true
+  drip_amount: "0.05"
+  decimals: 18
+TSOL:
+  family: solana
+  blockchain: Solana
+  network: devnet
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 9
+TATOM:
+  family: cosmos
+  blockchain: Cosmos Hub
+  network: theta-testnet-001
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
