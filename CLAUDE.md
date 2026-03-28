@@ -27,7 +27,7 @@
 - `console.print(table)` truncates wide columns in narrow test terminals — print key values (addresses, hashes) on their own line before/after tables so tests can assert on them
 
 ## Phase completion
-- Phases 1–5 done (EVM, Solana, Cosmos, Phase 4 chains, UTXO) — 272 tests
+- Phases 1–6 done (EVM, Solana, Cosmos, Phase 4 chains, UTXO, Remaining) — 451 tests
 - pyproject.toml optional-dep groups NOT yet added for Phase 4 — add if installing from scratch
 
 ## Phase 4 handler notes
@@ -45,3 +45,12 @@
 
 ## aiohttp async mock pattern (Phase 4 handlers)
 - Patch at `handlers.<name>.aiohttp.ClientSession`; both session and response need `__aenter__`/`__aexit__` as AsyncMock
+
+## Phase 6 handler notes (Remaining chains)
+- 14 handlers: hedera, algorand, substrate, eos, stacks, flow, vechain, tezos, avalanche_p, icp, cardano, zcash, bittensor, canton
+- No Phase 6 SDKs installed — all use aiohttp for balance queries, drip returns "SDK not installed" errors
+- TBD handlers (cardano, zcash, bittensor, canton): guard on `rpc_url == "TBD"`, no network calls
+- SDK-stub handlers (substrate, flow, icp, avalanche_p): drip returns "requires X SDK" error; balance returns static message
+- Real-API handlers (hedera, algorand, eos, stacks, tezos, vechain): drip returns SDK error, but get_faucet_balance makes real API calls
+- Wallet env vars per handler: FAUCET_HEDERA_ACCOUNT_ID, FAUCET_EOS_ACCOUNT, FAUCET_ALGORAND_ADDRESS, FAUCET_STACKS_ADDRESS, FAUCET_TEZOS_ADDRESS, FAUCET_VECHAIN_ADDRESS
+- CLI init commands added for all 14 families in cli.py
