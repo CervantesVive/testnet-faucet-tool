@@ -370,8 +370,8 @@ Each of these is a standalone handler with its own SDK.
 | 2 | Solana | 12 | 58% | 0.5 day |
 | 3 | Cosmos | 14 | 68% | 2 days |
 | 4 | Easy API chains | ~22 | 83% | 2 days |
-| 5 | UTXO | 6 | 87% | 2 days |
-| 6 | Remaining | ~28 | 100% | 3 days |
+| 5 | UTXO | 7 | 88% | 2 days |
+| 6 | Remaining | ~27 | 100% | 3 days |
 | 7 | Polish | — | — | 1 day |
 | **Total** | | **~154** | **100%** | **~13.5 days** |
 
