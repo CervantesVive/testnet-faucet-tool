@@ -5,6 +5,7 @@ from core.registry import get_all_assets, get_handler, get_asset_config
 from core.reporter import print_drip_result, print_asset_table, console
 from core.rate_limiter import check_rate_limit, record_drip
 from core.retry import retry_drip
+from core.logger import log_drip, read_history
 
 
 @click.group()
@@ -57,6 +58,7 @@ def drip(asset_ids, address, dry_run):
 
         result = asyncio.run(retry_drip(handler, address, asset_id, config.get("drip_amount", "0")))
         print_drip_result(result)
+        log_drip(address, result)
         if result.success:
             record_drip(asset_id, address)
 
@@ -154,6 +156,7 @@ def batch(csv_file, default_asset):
             # Execute drip
             try:
                 result = asyncio.run(handler.drip(address, asset_id, config.get("drip_amount", "0")))
+                log_drip(address, result)
                 if result.success:
                     record_drip(asset_id, address)
                     results.append({
@@ -294,6 +297,87 @@ def refill(family, threshold):
 
     console.print(table)
     console.print(f"\nSummary: {ok_count} OK, {low_count} LOW, {error_count} ERROR")
+
+
+@main.command()
+@click.option("--family", help="Filter by chain family")
+def dashboard(family):
+    """Show balance monitoring dashboard for all native assets."""
+    from rich.table import Table
+
+    assets = get_all_assets()
+    native_assets = {k: v for k, v in assets.items() if v.get("native_asset")}
+    if family:
+        native_assets = {k: v for k, v in native_assets.items() if v.get("family") == family}
+
+    table = Table(title="Faucet Balance Dashboard")
+    table.add_column("Asset", style="cyan")
+    table.add_column("Family", style="magenta")
+    table.add_column("Blockchain")
+    table.add_column("Balance")
+    table.add_column("Status")
+
+    funded = low = errors = 0
+
+    for asset_id in sorted(native_assets):
+        cfg = native_assets[asset_id]
+        fam = cfg.get("family", "")
+        blockchain = cfg.get("blockchain", "")
+        drip_amount = cfg.get("drip_amount", "0")
+
+        try:
+            handler = get_handler(asset_id)
+            balances = asyncio.run(handler.get_faucet_balance())
+            balance_str = list(balances.values())[0] if balances else "unknown"
+        except (NotImplementedError, Exception) as e:
+            balance_str = f"error: {e}"
+
+        # Determine status
+        try:
+            bal = float(balance_str)
+            threshold = float(drip_amount) * 2
+            if bal >= threshold:
+                status = "[green]FUNDED[/green]"
+                funded += 1
+            else:
+                status = "[yellow]LOW[/yellow]"
+                low += 1
+        except (ValueError, TypeError):
+            status = "[red]ERROR[/red]"
+            errors += 1
+
+        console.print(f"DASHBOARD {asset_id} {balance_str}")
+        table.add_row(asset_id, fam, blockchain, balance_str, status)
+
+    console.print(table)
+    console.print(f"\n{funded} funded, {low} low, {errors} error")
+
+
+@main.command()
+@click.option("--limit", "-n", default=20, help="Number of recent drips to show")
+def history(limit):
+    """Show recent drip history."""
+    from rich.table import Table
+    entries = read_history(limit)
+    if not entries:
+        console.print("[dim]No drip history found.[/dim]")
+        return
+
+    table = Table(title=f"Last {len(entries)} Drips")
+    table.add_column("Time")
+    table.add_column("Asset", style="cyan")
+    table.add_column("Address")
+    table.add_column("Amount")
+    table.add_column("Status")
+    table.add_column("TX Hash / Error")
+
+    for entry in reversed(entries):  # newest first
+        ts = entry.get("timestamp", "")[:19]  # trim microseconds
+        status = "[green]OK[/green]" if entry.get("success") else "[red]FAIL[/red]"
+        detail = entry.get("tx_hash") or entry.get("error") or ""
+        table.add_row(ts, entry.get("asset_id", ""), entry.get("address", "")[:20] + "...", entry.get("amount", ""), status, str(detail)[:40])
+
+    console.print(table)
 
 
 @main.command()
