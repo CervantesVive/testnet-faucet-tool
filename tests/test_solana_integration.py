@@ -50,8 +50,8 @@ def test_drip_tsol_mocked(monkeypatch):
 
     monkeypatch.setattr(SolanaHandler, "drip", mock_drip)
     import core.rate_limiter as rl
-    import tempfile, pathlib
-    monkeypatch.setattr(rl, "DB_PATH", pathlib.Path(tempfile.gettempdir()) / "test_faucet_solana.db")
+    import tempfile, pathlib, uuid
+    monkeypatch.setattr(rl, "DB_PATH", pathlib.Path(tempfile.gettempdir()) / f"test_faucet_{uuid.uuid4().hex}.db")
 
     runner = CliRunner()
     result = runner.invoke(main, ["drip", "TSOL", "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"])
