@@ -24,3 +24,17 @@
 
 ## Rich + CliRunner
 - `console.print(table)` truncates wide columns in narrow test terminals — print key values (addresses, hashes) on their own line before/after tables so tests can assert on them
+
+## Phase completion
+- Phases 1–4 done (EVM, Solana, Cosmos + sui/aptos/near/xrp/stellar/tron/ton) — 230 tests
+- pyproject.toml optional-dep groups NOT yet added for Phase 4 — add if installing from scratch
+
+## Phase 4 handler notes
+- xrpl-py and stellar-sdk installed; pysui, aptos-sdk, py-near, tronpy, tonsdk NOT installed
+- sui/aptos use aiohttp HTTP POST to public faucet URL (no SDK needed for native drip)
+- near/tron/ton use aiohttp + cryptography for raw JSON-RPC; cryptography also NOT in venv
+- near/tron/ton get_faucet_balance always returns "no wallet configured" (address derivation unavailable without cryptography)
+- Stellar: network passphrase derived via _get_network_passphrase() from config["network"] — never hardcode Network.TESTNET_NETWORK_PASSPHRASE
+
+## aiohttp async mock pattern (Phase 4 handlers)
+- Patch at `handlers.<name>.aiohttp.ClientSession`; both session and response need `__aenter__`/`__aexit__` as AsyncMock
