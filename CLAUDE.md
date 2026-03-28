@@ -16,6 +16,7 @@
 - Unit tests: patch client constructor at module level (e.g. `patch("handlers.cosmos.LedgerClient", ...)`)
 - Integration tests: `CliRunner` + synchronous `def` (CLI calls `asyncio.run()` internally — no nesting)
 - Rate limiter isolation: `monkeypatch.setattr(rl, "DB_PATH", tmp_path / "test.db")`
+- History log isolation: `monkeypatch.setattr(logger_mod, "LOG_PATH", tmp_path / "history.log")`
 - Async tests use `@pytest.mark.asyncio` (mode set to `auto` in `pyproject.toml`)
 
 ## cosmpy gotchas (Cosmos handler)
@@ -27,7 +28,7 @@
 - `console.print(table)` truncates wide columns in narrow test terminals — print key values (addresses, hashes) on their own line before/after tables so tests can assert on them
 
 ## Phase completion
-- Phases 1–6 done (EVM, Solana, Cosmos, Phase 4 chains, UTXO, Remaining) — 451 tests
+- Phases 1–7 done (EVM, Solana, Cosmos, Phase 4 chains, UTXO, Remaining, Polish) — 531 tests
 - pyproject.toml optional-dep groups NOT yet added for Phase 4 — add if installing from scratch
 
 ## Phase 4 handler notes
@@ -54,3 +55,10 @@
 - Real-API handlers (hedera, algorand, eos, stacks, tezos, vechain): drip returns SDK error, but get_faucet_balance makes real API calls
 - Wallet env vars per handler: FAUCET_HEDERA_ACCOUNT_ID, FAUCET_EOS_ACCOUNT, FAUCET_ALGORAND_ADDRESS, FAUCET_STACKS_ADDRESS, FAUCET_TEZOS_ADDRESS, FAUCET_VECHAIN_ADDRESS
 - CLI init commands added for all 14 families in cli.py
+
+## Phase 7 notes (Polish)
+- New CLI commands: `batch`, `refill`, `dashboard`, `history`
+- `core/retry.py` — `retry_drip()` with exponential backoff; only retries transient errors (not TBD/validation)
+- `core/logger.py` — JSON lines logging to `~/.bitgo-faucet/history.log`; `LOG_PATH` is monkeypatchable like `DB_PATH`
+- History log isolation: `conftest.py` has autouse fixture redirecting `LOG_PATH` to `tmp_path`
+- cli.py `list` command shadows Python builtin `list()` — use `next(iter(...))` instead of `list(...)` in cli.py module scope
