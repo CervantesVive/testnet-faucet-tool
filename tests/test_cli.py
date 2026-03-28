@@ -58,8 +58,7 @@ def test_drip_dry_run_handler_not_implemented(tmp_path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(main, ["drip", "--dry-run", "HTETH", "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18"])
     assert result.exit_code == 0
-    # handler not implemented yet, should print skip message
-    assert "Skipping" in result.output or "dry run" in result.output
+    assert "Dry run" in result.output or "Skipping" in result.output
 
 
 def test_drip_unknown_asset(tmp_path, monkeypatch):
