@@ -369,13 +369,13 @@ Each of these is a standalone handler with its own SDK.
 | 1 | EVM | 72 | 50% | 2 days |
 | 2 | Solana | 12 | 58% | 0.5 day |
 | 3 | Cosmos | 14 | 68% | 2 days |
-| 4 | Easy API chains | ~22 | 83% | 2 days |
-| 5 | UTXO | 7 | 88% | 2 days |
-| 6 | Remaining | ~27 | 100% | 3 days |
+| 4 | Easy API chains | 19 | 81% | 2 days |
+| 5 | UTXO | 6 | 85% | 2 days |
+| 6 | Remaining | 21 | 100% | 3 days |
 | 7 | Polish | — | — | 1 day |
-| **Total** | | **~154** | **100%** | **~13.5 days** |
+| **Total** | | **144** | **100%** | **~13.5 days** |
 
-Phase 1 alone gets you to 50% coverage. Phases 1–4 get you to 83%. The long tail (UTXO + exotic chains) is the remaining 17% but takes 40% of the time.
+Phase 1 alone gets you to 50% coverage. Phases 1–4 get you to 81%. The long tail (UTXO + exotic chains) is the remaining 19% but takes 40% of the time.
 
 ---
 
