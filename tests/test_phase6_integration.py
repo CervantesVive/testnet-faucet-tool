@@ -246,3 +246,209 @@ class TestInvalidAddress:
         runner = CliRunner()
         result = runner.invoke(main, ["drip", "--dry-run", "TXTZ", "invalid"])
         assert "Invalid address" in result.output
+
+
+# ---------------------------------------------------------------------------
+# faucet init <family>
+# ---------------------------------------------------------------------------
+
+PHASE6_FAMILIES = [
+    ("hedera", "Hedera"),
+    ("algorand", "Algorand"),
+    ("cardano", "Cardano"),
+    ("eos", "EOS"),
+    ("substrate", "Substrate"),
+    ("stacks", "Stacks"),
+    ("flow", "Flow"),
+    ("vechain", "VeChain"),
+    ("tezos", "Tezos"),
+    ("zcash", "Zcash"),
+    ("icp", "ICP"),
+    ("bittensor", "Bittensor"),
+    ("avalanche_p", "Avalanche P-Chain"),
+    ("canton", "Canton"),
+]
+
+
+class TestInitCommand:
+    def test_init_hedera_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "hedera"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_hedera_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "hedera"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Hedera" in result.output
+
+    def test_init_algorand_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "algorand"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_algorand_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "algorand"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Algorand" in result.output
+
+    def test_init_cardano_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "cardano"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_cardano_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "cardano"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Cardano" in result.output
+
+    def test_init_eos_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "eos"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_eos_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "eos"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "EOS" in result.output
+
+    def test_init_substrate_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "substrate"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_substrate_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "substrate"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Substrate" in result.output
+
+    def test_init_stacks_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "stacks"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_stacks_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "stacks"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Stacks" in result.output
+
+    def test_init_flow_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "flow"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_flow_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "flow"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Flow" in result.output
+
+    def test_init_vechain_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "vechain"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_vechain_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "vechain"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "VeChain" in result.output
+
+    def test_init_tezos_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "tezos"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_tezos_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "tezos"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Tezos" in result.output
+
+    def test_init_zcash_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "zcash"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_zcash_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "zcash"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Zcash" in result.output
+
+    def test_init_icp_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "icp"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_icp_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "icp"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "ICP" in result.output
+
+    def test_init_bittensor_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "bittensor"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_bittensor_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "bittensor"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Bittensor" in result.output
+
+    def test_init_avalanche_p_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "avalanche_p"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_avalanche_p_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "avalanche_p"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Avalanche" in result.output
+
+    def test_init_canton_no_wallet(self):
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "canton"])
+        assert result.exit_code == 0
+        assert "Error" in result.output or "FAUCET" in result.output
+
+    def test_init_canton_with_wallet(self, monkeypatch):
+        monkeypatch.setenv("FAUCET_PRIVATE_KEY", "a" * 64)
+        runner = CliRunner()
+        result = runner.invoke(main, ["init", "canton"])
+        assert result.exit_code == 0
+        assert "configured" in result.output.lower() or "Canton" in result.output

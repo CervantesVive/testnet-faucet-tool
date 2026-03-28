@@ -106,6 +106,34 @@ def init(family):
         _init_ton()
     elif family == "utxo":
         _init_utxo()
+    elif family == "hedera":
+        _init_hedera()
+    elif family == "algorand":
+        _init_algorand()
+    elif family == "cardano":
+        _init_cardano()
+    elif family == "eos":
+        _init_eos()
+    elif family == "substrate":
+        _init_substrate()
+    elif family == "stacks":
+        _init_stacks()
+    elif family == "flow":
+        _init_flow()
+    elif family == "vechain":
+        _init_vechain()
+    elif family == "tezos":
+        _init_tezos()
+    elif family == "zcash":
+        _init_zcash()
+    elif family == "icp":
+        _init_icp()
+    elif family == "bittensor":
+        _init_bittensor()
+    elif family == "avalanche_p":
+        _init_avalanche_p()
+    elif family == "canton":
+        _init_canton()
     else:
         console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
 
@@ -384,6 +412,194 @@ def _init_utxo():
             cfg.get("drip_amount", ""),
         )
     console.print(table)
+
+
+def _init_hedera():
+    """Print Hedera faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Hedera faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Hedera testnet wallet at: https://portal.hedera.com/[/dim]")
+
+
+def _init_algorand():
+    """Print Algorand faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Algorand faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Algorand testnet wallet at: https://bank.testnet.algorand.network/[/dim]")
+
+
+def _init_cardano():
+    """Print Cardano faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Cardano faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Cardano testnet wallet at: https://docs.cardano.org/cardano-testnets/tools/faucet/[/dim]")
+
+
+def _init_eos():
+    """Print EOS faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    eos_account = os.environ.get("FAUCET_EOS_ACCOUNT")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]EOS faucet wallet configured (from {source})[/green]")
+    if eos_account:
+        console.print(f"[green]EOS account: {eos_account}[/green]")
+    console.print("[dim]Fund your EOS testnet wallet at: https://jungle4.cryptolions.io/#home[/dim]")
+
+
+def _init_substrate():
+    """Print Substrate faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Substrate faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Substrate testnet wallet at: https://faucet.polkadot.io/westend[/dim]")
+
+
+def _init_stacks():
+    """Print Stacks faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Stacks faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Stacks testnet wallet at: https://explorer.hiro.so/sandbox/faucet?chain=testnet[/dim]")
+
+
+def _init_flow():
+    """Print Flow faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Flow faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Flow testnet wallet at: https://testnet-faucet.onflow.org/[/dim]")
+
+
+def _init_vechain():
+    """Print VeChain faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]VeChain faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your VeChain testnet wallet at: https://faucet.vecha.in/[/dim]")
+
+
+def _init_tezos():
+    """Print Tezos faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Tezos faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Tezos testnet wallet at: https://faucet.ghostnet.teztnets.com/[/dim]")
+
+
+def _init_zcash():
+    """Print Zcash faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Zcash faucet wallet configured (from {source})[/green]")
+    console.print("[dim]No public testnet faucet known — manual funding required[/dim]")
+
+
+def _init_icp():
+    """Print ICP faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    icp_principal = os.environ.get("FAUCET_ICP_PRINCIPAL")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]ICP faucet wallet configured (from {source})[/green]")
+    if icp_principal:
+        console.print(f"[green]ICP principal: {icp_principal}[/green]")
+    console.print("[dim]Fund your ICP testnet wallet at: https://faucet.dfinity.org/[/dim]")
+
+
+def _init_bittensor():
+    """Print Bittensor faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Bittensor faucet wallet configured (from {source})[/green]")
+    console.print("[dim]No public testnet faucet known — manual funding required[/dim]")
+
+
+def _init_avalanche_p():
+    """Print Avalanche P-Chain faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Avalanche P-Chain faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Avalanche P-Chain testnet wallet at: https://core.app/tools/testnet-faucet/[/dim]")
+
+
+def _init_canton():
+    """Print Canton faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Canton faucet wallet configured (from {source})[/green]")
+    console.print("[dim]No public testnet faucet known — manual funding required[/dim]")
 
 
 if __name__ == "__main__":
