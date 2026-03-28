@@ -88,6 +88,8 @@ def init(family):
         _init_evm()
     elif family == "solana":
         _init_solana()
+    elif family == "cosmos":
+        _init_cosmos()
     else:
         console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
 
@@ -162,6 +164,60 @@ def _init_solana():
     console.print(f"  solana airdrop 2 {pubkey} --url devnet")
     console.print()
     console.print("[dim]Or visit: https://faucet.solana.com and paste the address above[/dim]")
+
+
+def _init_cosmos():
+    """Derive Cosmos faucet addresses per chain and print for manual funding."""
+    import os
+    from cosmpy.aerial.wallet import LocalWallet
+    from cosmpy.crypto.keypairs import PrivateKey
+    from rich.table import Table
+
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+
+    assets = get_all_assets()
+    cosmos_native = {
+        k: v for k, v in assets.items()
+        if v.get("family") == "cosmos" and v.get("native_asset")
+    }
+
+    # Derive one address per unique bech32_prefix (same key, different prefix = different address)
+    prefix_to_address = {}
+    for cfg in cosmos_native.values():
+        prefix = cfg.get("bech32_prefix", "cosmos")
+        if prefix not in prefix_to_address:
+            if mnemonic:
+                wallet = LocalWallet.from_mnemonic(mnemonic, prefix=prefix)
+            else:
+                key = private_key.lstrip("0x") if private_key.startswith("0x") else private_key
+                wallet = LocalWallet(PrivateKey(bytes.fromhex(key)), prefix=prefix)
+            prefix_to_address[prefix] = str(wallet.address())
+
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Cosmos faucet addresses (from {source}):[/green]")
+
+    table = Table()
+    table.add_column("Asset")
+    table.add_column("Chain")
+    table.add_column("Network")
+    table.add_column("Address")
+    table.add_column("Drip Amount")
+
+    for asset_id, cfg in sorted(cosmos_native.items()):
+        prefix = cfg.get("bech32_prefix", "cosmos")
+        table.add_row(
+            asset_id,
+            cfg.get("blockchain", ""),
+            cfg.get("network", ""),
+            prefix_to_address[prefix],
+            cfg.get("drip_amount", ""),
+        )
+    console.print(table)
 
 
 if __name__ == "__main__":
