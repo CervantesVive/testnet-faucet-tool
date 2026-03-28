@@ -1,21 +1,1660 @@
+# ============================================================
+# BitGo Testnet Faucet — Chain & Asset Registry
+# ============================================================
+# Each key is the BitGo asset ID.
+# Colons in keys (e.g. TSOL:USDC) are valid YAML when quoted.
+# ============================================================
+
+# ------------------------------------------------------------------
+# EVM — Native Coins
+# ------------------------------------------------------------------
+
 HTETH:
   family: evm
   blockchain: Ethereum
   network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
   native_asset: true
   drip_amount: "0.05"
   decimals: 18
+
+TARBETH:
+  family: evm
+  blockchain: Arbitrum
+  network: sepolia
+  rpc_url: https://sepolia-rollup.arbitrum.io/rpc
+  explorer: https://sepolia.arbiscan.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 18
+
+TAVAXC:
+  family: evm
+  blockchain: Avalanche C-Chain
+  network: fuji
+  rpc_url: https://api.avax-test.network/ext/bc/C/rpc
+  explorer: https://testnet.snowtrace.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TAVAXP:
+  family: avalanche_p
+  blockchain: Avalanche P-Chain
+  network: fuji
+  rpc_url: https://api.avax-test.network
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 9
+  note: P-Chain uses Avalanche native API, not EVM
+
+TBASEETH:
+  family: evm
+  blockchain: Base
+  network: sepolia
+  rpc_url: https://sepolia.base.org
+  explorer: https://sepolia.basescan.org/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 18
+
+TBERA:
+  family: evm
+  blockchain: Berachain
+  network: bArtio
+  rpc_url: https://artio.rpc.berachain.com
+  explorer: https://artio.beratrail.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TBSC:
+  family: evm
+  blockchain: BNB Smart Chain
+  network: testnet
+  rpc_url: https://data-seed-prebsc-1-s1.binance.org:8545
+  explorer: https://testnet.bscscan.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.05"
+  decimals: 18
+
+TCELO:
+  family: evm
+  blockchain: Celo
+  network: alfajores
+  rpc_url: https://alfajores-forno.celo-testnet.org
+  explorer: https://alfajores.celoscan.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TCOREDAO:
+  family: evm
+  blockchain: CoreDAO
+  network: testnet
+  rpc_url: https://rpc.test.btcs.network
+  explorer: https://scan.test.btcs.network/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TETC:
+  family: evm
+  blockchain: Ethereum Classic
+  network: mordor
+  rpc_url: https://rpc.mordor.etccooperative.org
+  explorer: https://etc-mordor.blockscout.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TFLR:
+  family: evm
+  blockchain: Flare
+  network: coston2
+  rpc_url: https://coston2-api.flare.network/ext/bc/C/rpc
+  explorer: https://coston2-explorer.flare.network/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "10"
+  decimals: 18
+
+THYPEEVM:
+  family: evm
+  blockchain: Hyperliquid EVM
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TIP:
+  family: evm
+  blockchain: Story
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TIOTA:
+  family: evm
+  blockchain: IOTA
+  network: testnet
+  rpc_url: https://json-rpc.evm.testnet.iotaledger.net
+  explorer: https://explorer.evm.testnet.iotaledger.net/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TJOVAYETH:
+  family: evm
+  blockchain: Jovay
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TKAIA:
+  family: evm
+  blockchain: Kaia
+  network: kairos
+  rpc_url: https://public-en-kairos.node.kaia.io
+  explorer: https://baobab.klaytnfinder.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 18
+
+TKAVAEVM:
+  family: evm
+  blockchain: Kava EVM
+  network: testnet
+  rpc_url: https://evm.testnet.kava.io
+  explorer: https://testnet.kavascan.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TMANTLE:
+  family: evm
+  blockchain: Mantle
+  network: sepolia
+  rpc_url: https://rpc.sepolia.mantle.xyz
+  explorer: https://explorer.sepolia.mantle.xyz/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TMON:
+  family: evm
+  blockchain: Monad
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TMORPHETH:
+  family: evm
+  blockchain: Morph
+  network: testnet
+  rpc_url: https://rpc-testnet.morphl2.io
+  explorer: https://explorer-testnet.morphl2.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TOAS:
+  family: evm
+  blockchain: Oasys
+  network: testnet
+  rpc_url: https://rpc.testnet.oasys.games
+  explorer: https://scan.testnet.oasys.games/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TOKBXLAYER:
+  family: evm
+  blockchain: OKB X Layer
+  network: testnet
+  rpc_url: https://testrpc.xlayer.tech
+  explorer: https://www.okx.com/explorer/xlayer-test/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TOPETH:
+  family: evm
+  blockchain: Optimism
+  network: sepolia
+  rpc_url: https://sepolia.optimism.io
+  explorer: https://sepolia-optimism.etherscan.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 18
+
+TPOLYGON:
+  family: evm
+  blockchain: Polygon
+  network: amoy
+  rpc_url: https://rpc-amoy.polygon.technology
+  explorer: https://amoy.polygonscan.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TRBTC:
+  family: evm
+  blockchain: RSK
+  network: testnet
+  rpc_url: https://public-node.testnet.rsk.co
+  explorer: https://explorer.testnet.rootstock.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.001"
+  decimals: 18
+
+TSEIEVM:
+  family: evm
+  blockchain: Sei EVM
+  network: arctic-1
+  rpc_url: https://evm-rpc-arctic-1.sei-apis.com
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TSGB:
+  family: evm
+  blockchain: Songbird
+  network: coston
+  rpc_url: https://coston-api.flare.network/ext/bc/C/rpc
+  explorer: https://coston-explorer.flare.network/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "10"
+  decimals: 18
+
+TSONEIUM:
+  family: evm
+  blockchain: Soneium
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 18
+
+TSONIC:
+  family: evm
+  blockchain: Sonic
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TWEMIX:
+  family: evm
+  blockchain: WeMix
+  network: testnet
+  rpc_url: https://api.test.wemix.com
+  explorer: https://test.wemixscan.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TWORLD:
+  family: evm
+  blockchain: WorldChain
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 18
+
+TXDC:
+  family: evm
+  blockchain: XDC
+  network: apothem
+  rpc_url: https://rpc.apothem.network
+  explorer: https://apothem.xdcscan.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 18
+
+TXPL:
+  family: evm
+  blockchain: Plasma
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+TZETA:
+  family: evm
+  blockchain: ZetaChain
+  network: athens3
+  rpc_url: https://zetachain-athens-evm.blockpi.network/v1/rpc/public
+  explorer: https://explorer.zetachain.com/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 18
+
+TOG:
+  family: evm
+  blockchain: 0G
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+
+# ------------------------------------------------------------------
+# EVM — Tokens
+# ------------------------------------------------------------------
+
+"HTETH:GOUSD":
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"HTETH:GRTX":
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"HTETH:USD1":
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"TBERA:BGT":
+  family: evm
+  blockchain: Berachain
+  network: bArtio
+  rpc_url: https://artio.rpc.berachain.com
+  explorer: https://artio.beratrail.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+"TBSC:BUSD":
+  family: evm
+  blockchain: BNB Smart Chain
+  network: testnet
+  rpc_url: https://data-seed-prebsc-1-s1.binance.org:8545
+  explorer: https://testnet.bscscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"TBSC:USD1":
+  family: evm
+  blockchain: BNB Smart Chain
+  network: testnet
+  rpc_url: https://data-seed-prebsc-1-s1.binance.org:8545
+  explorer: https://testnet.bscscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TCUSD:
+  family: evm
+  blockchain: Celo
+  network: alfajores
+  rpc_url: https://alfajores-forno.celo-testnet.org
+  explorer: https://alfajores.celoscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TDAI:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TEIGEN:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+TEUROC:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TFMF:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"TFLR:WFLR":
+  family: evm
+  blockchain: Flare
+  network: coston2
+  rpc_url: https://coston2-api.flare.network/ext/bc/C/rpc
+  explorer: https://coston2-explorer.flare.network/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+GHCN:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+  note: "UNCONFIRMED testnet asset — verify BitGo ID before implementing"
+
+GHDO:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+  note: "UNCONFIRMED testnet asset — verify BitGo ID before implementing"
+
+"TARBETH:LINK":
+  family: evm
+  blockchain: Arbitrum
+  network: sepolia
+  rpc_url: https://sepolia-rollup.arbitrum.io/rpc
+  explorer: https://sepolia.arbiscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+"TARBETH:XSGD":
+  family: evm
+  blockchain: Arbitrum
+  network: sepolia
+  rpc_url: https://sepolia-rollup.arbitrum.io/rpc
+  explorer: https://sepolia.arbiscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TAVAXC:LINK":
+  family: evm
+  blockchain: Avalanche C-Chain
+  network: fuji
+  rpc_url: https://api.avax-test.network/ext/bc/C/rpc
+  explorer: https://testnet.snowtrace.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+"TAVAXC:XSGD":
+  family: evm
+  blockchain: Avalanche C-Chain
+  network: fuji
+  rpc_url: https://api.avax-test.network/ext/bc/C/rpc
+  explorer: https://testnet.snowtrace.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TBASEETH:USDC":
+  family: evm
+  blockchain: Base
+  network: sepolia
+  rpc_url: https://sepolia.base.org
+  explorer: https://sepolia.basescan.org/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TJOVAYETH:USDCE":
+  family: evm
+  blockchain: Jovay
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TMATIC:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+  note: "ERC-20 MATIC token on Ethereum — NOT the Polygon native coin (see TPOLYGON)"
+
+"TMORPHETH:USD1":
+  family: evm
+  blockchain: Morph
+  network: testnet
+  rpc_url: https://rpc-testnet.morphl2.io
+  explorer: https://explorer-testnet.morphl2.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TMSN:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"TOPETH:WCT":
+  family: evm
+  blockchain: Optimism
+  network: sepolia
+  rpc_url: https://sepolia.optimism.io
+  explorer: https://sepolia-optimism.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+"TPOLYGON:LINK":
+  family: evm
+  blockchain: Polygon
+  network: amoy
+  rpc_url: https://rpc-amoy.polygon.technology
+  explorer: https://amoy.polygonscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+"TPOLYGON:USDC":
+  family: evm
+  blockchain: Polygon
+  network: amoy
+  rpc_url: https://rpc-amoy.polygon.technology
+  explorer: https://amoy.polygonscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TPOLYGON:USDT":
+  family: evm
+  blockchain: Polygon
+  network: amoy
+  rpc_url: https://rpc-amoy.polygon.technology
+  explorer: https://amoy.polygonscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TPOLYGON:XSGD":
+  family: evm
+  blockchain: Polygon
+  network: amoy
+  rpc_url: https://rpc-amoy.polygon.technology
+  explorer: https://amoy.polygonscan.com/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TRIF:
+  family: evm
+  blockchain: RSK
+  network: testnet
+  rpc_url: https://public-node.testnet.rsk.co
+  explorer: https://explorer.testnet.rootstock.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TRLUSD:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+TUSDC:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TUSDT:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TWDOGE:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "100"
+  decimals: 18
+
+TWETH:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "0.01"
+  decimals: 18
+
+"TWORLD:USDC":
+  family: evm
+  blockchain: WorldChain
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TWORLD:WLD":
+  family: evm
+  blockchain: WorldChain
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "1"
+  decimals: 18
+
+TXSGD:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+TXUSD:
+  family: evm
+  blockchain: Ethereum
+  network: holesky
+  rpc_url: https://rpc.holesky.ethpandaops.io
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Solana
+# ------------------------------------------------------------------
+
 TSOL:
   family: solana
   blockchain: Solana
   network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
   native_asset: true
+  drip_amount: "0.5"
+  decimals: 9
+  funding_method: request_airdrop
+
+"TSOL:USDC":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TSOL:USDT":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TSOL:USD1":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TSOL:WSOL":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "So11111111111111111111111111111111111111112"
   drip_amount: "0.1"
   decimals: 9
+
+"TSOL:GMT":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 9
+
+"TSOL:GARI":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "10"
+  decimals: 9
+
+"TSOL:ORCA":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 6
+
+"TSOL:RAY":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 6
+
+"TSOL:SLND":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 6
+
+"TSOL:SRM":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 6
+
+"SOL:FORD":
+  family: solana
+  blockchain: Solana
+  network: devnet
+  rpc_url: https://api.devnet.solana.com
+  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
+  native_asset: false
+  mint_address: "TBD"
+  drip_amount: "1"
+  decimals: 9
+  note: "UNCONFIRMED testnet asset — verify BitGo ID before implementing"
+
+# ------------------------------------------------------------------
+# Cosmos Family
+# ------------------------------------------------------------------
+
 TATOM:
   family: cosmos
   blockchain: Cosmos Hub
   network: theta-testnet-001
+  rpc_url: https://rpc.sentry-01.theta-testnet.polypore.xyz
+  explorer: https://explorer.theta-testnet.polypore.xyz/transactions/{tx_hash}
   native_asset: true
   drip_amount: "1"
   decimals: 6
+  denom: uatom
+  bech32_prefix: cosmos
+
+TOSMO:
+  family: cosmos
+  blockchain: Osmosis
+  network: osmo-test-5
+  rpc_url: https://rpc.testnet.osmosis.zone
+  explorer: https://testnet.mintscan.io/osmosis-testnet/txs/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: uosmo
+  bech32_prefix: osmo
+
+TSEI:
+  family: cosmos
+  blockchain: Sei
+  network: atlantic-2
+  rpc_url: https://rpc.atlantic-2.seinetwork.io
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: usei
+  bech32_prefix: sei
+
+TTIA:
+  family: cosmos
+  blockchain: Celestia
+  network: mocha-4
+  rpc_url: https://rpc-mocha.pops.one
+  explorer: https://testnet.mintscan.io/celestia-testnet/txs/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: utia
+  bech32_prefix: celestia
+
+TCOREUM:
+  family: cosmos
+  blockchain: Coreum
+  network: coreum-testnet-1
+  rpc_url: https://full-node.testnet-1.coreum.dev:26657
+  explorer: https://testnet.explorer.coreum.com/coreum/transactions/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: utestcore
+  bech32_prefix: testcore
+
+TBLD:
+  family: cosmos
+  blockchain: Agoric
+  network: emerynet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: ubld
+  bech32_prefix: agoric
+
+TINJECTIVE:
+  family: cosmos
+  blockchain: Injective
+  network: injective-888
+  rpc_url: https://testnet.sentry.tm.injective.network:443
+  explorer: https://testnet.explorer.injective.network/transaction/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 18
+  denom: inj
+  bech32_prefix: inj
+
+THASH:
+  family: cosmos
+  blockchain: Provenance
+  network: pio-testnet-1
+  rpc_url: https://rpc.test.provenance.io
+  explorer: https://explorer.test.provenance.io/txs/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 9
+  denom: nhash
+  bech32_prefix: tp
+
+"THASH:YLDS":
+  family: cosmos
+  blockchain: Provenance
+  network: pio-testnet-1
+  rpc_url: https://rpc.test.provenance.io
+  explorer: https://explorer.test.provenance.io/txs/{tx_hash}
+  native_asset: false
+  drip_amount: "10"
+  decimals: 6
+  denom: "TBD"
+  bech32_prefix: tp
+
+TCRONOS:
+  family: cosmos
+  blockchain: Cronos POS
+  network: pioneer11
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 8
+  denom: basetcro
+  bech32_prefix: tcro
+
+TASI:
+  family: cosmos
+  blockchain: Fetch.ai
+  network: dorado-1
+  rpc_url: https://rpc-dorado.fetch.ai
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 18
+  denom: atestfet
+  bech32_prefix: fetch
+
+TINITIA:
+  family: cosmos
+  blockchain: Initia
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: uinit
+  bech32_prefix: init
+
+TBABY:
+  family: cosmos
+  blockchain: Babylon
+  network: bbn-test-3
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+  denom: ubbn
+  bech32_prefix: bbn
+
+"TTHORCHAIN:RUNE":
+  family: cosmos
+  blockchain: Thorchain
+  network: stagenet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 8
+  denom: rune
+  bech32_prefix: thor
+  note: "Thorchain uses Cosmos SDK but has unique architecture — may need separate handler"
+
+# ------------------------------------------------------------------
+# Sui Family
+# ------------------------------------------------------------------
+
+TSUI:
+  family: sui
+  blockchain: Sui
+  network: devnet
+  faucet_url: https://faucet.devnet.sui.io/gas
+  explorer: https://suiexplorer.com/txblock/{tx_hash}?network=devnet
+  native_asset: true
+  drip_amount: "0.5"
+  decimals: 9
+
+"TSUI:DEEP":
+  family: sui
+  blockchain: Sui
+  network: devnet
+  faucet_url: https://faucet.devnet.sui.io/gas
+  explorer: https://suiexplorer.com/txblock/{tx_hash}?network=devnet
+  native_asset: false
+  object_type: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TSUI:WAL":
+  family: sui
+  blockchain: Sui
+  network: devnet
+  faucet_url: https://faucet.devnet.sui.io/gas
+  explorer: https://suiexplorer.com/txblock/{tx_hash}?network=devnet
+  native_asset: false
+  object_type: "TBD"
+  drip_amount: "10"
+  decimals: 9
+
+# ------------------------------------------------------------------
+# Aptos Family
+# ------------------------------------------------------------------
+
+TAPT:
+  family: aptos
+  blockchain: Aptos
+  network: devnet
+  faucet_url: https://faucet.devnet.aptoslabs.com/fund
+  explorer: https://explorer.aptoslabs.com/txn/{tx_hash}?network=devnet
+  native_asset: true
+  drip_amount: "1"
+  decimals: 8
+
+"TAPT:USDT":
+  family: aptos
+  blockchain: Aptos
+  network: devnet
+  faucet_url: https://faucet.devnet.aptoslabs.com/fund
+  explorer: https://explorer.aptoslabs.com/txn/{tx_hash}?network=devnet
+  native_asset: false
+  coin_type: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TAPT:USD1":
+  family: aptos
+  blockchain: Aptos
+  network: devnet
+  faucet_url: https://faucet.devnet.aptoslabs.com/fund
+  explorer: https://explorer.aptoslabs.com/txn/{tx_hash}?network=devnet
+  native_asset: false
+  coin_type: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# NEAR Family
+# ------------------------------------------------------------------
+
+TNEAR:
+  family: near
+  blockchain: NEAR
+  network: testnet
+  rpc_url: https://rpc.testnet.near.org
+  faucet_url: https://helper.testnet.near.org/account
+  explorer: https://testnet.nearblocks.io/txns/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 24
+
+"TNEAR:USDC":
+  family: near
+  blockchain: NEAR
+  network: testnet
+  rpc_url: https://rpc.testnet.near.org
+  explorer: https://testnet.nearblocks.io/txns/{tx_hash}
+  native_asset: false
+  contract_id: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# XRP Family
+# ------------------------------------------------------------------
+
+TXRP:
+  family: xrp
+  blockchain: XRP Ledger
+  network: testnet
+  rpc_url: https://s.altnet.rippletest.net:51234
+  faucet_url: https://faucet.altnet.rippletest.net/accounts
+  explorer: https://testnet.xrpl.org/transactions/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 6
+
+"TXRP:RLUSD":
+  family: xrp
+  blockchain: XRP Ledger
+  network: testnet
+  rpc_url: https://s.altnet.rippletest.net:51234
+  explorer: https://testnet.xrpl.org/transactions/{tx_hash}
+  native_asset: false
+  issuer: "TBD"
+  currency_code: "RLUSD"
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Stellar Family
+# ------------------------------------------------------------------
+
+TXLM:
+  family: stellar
+  blockchain: Stellar
+  network: testnet
+  rpc_url: https://horizon-testnet.stellar.org
+  faucet_url: https://friendbot.stellar.org
+  explorer: https://stellar.expert/explorer/testnet/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 7
+
+"TXLM:USDC":
+  family: stellar
+  blockchain: Stellar
+  network: testnet
+  rpc_url: https://horizon-testnet.stellar.org
+  explorer: https://stellar.expert/explorer/testnet/tx/{tx_hash}
+  native_asset: false
+  asset_code: "USDC"
+  issuer: "TBD"
+  drip_amount: "10"
+  decimals: 7
+  note: "Verify BitGo asset ID — may conflict with EVM TUSDC"
+
+"TXLM:ETH":
+  family: stellar
+  blockchain: Stellar
+  network: testnet
+  rpc_url: https://horizon-testnet.stellar.org
+  explorer: https://stellar.expert/explorer/testnet/tx/{tx_hash}
+  native_asset: false
+  asset_code: "ETH"
+  issuer: "TBD"
+  drip_amount: "0.01"
+  decimals: 7
+  note: "Verify BitGo asset ID — may conflict with EVM HTETH"
+
+TBST:
+  family: stellar
+  blockchain: Stellar
+  network: testnet
+  rpc_url: https://horizon-testnet.stellar.org
+  explorer: https://stellar.expert/explorer/testnet/tx/{tx_hash}
+  native_asset: false
+  asset_code: "BST"
+  issuer: "TBD"
+  drip_amount: "1"
+  decimals: 7
+
+# ------------------------------------------------------------------
+# Tron Family
+# ------------------------------------------------------------------
+
+TTRX:
+  family: tron
+  blockchain: Tron
+  network: nile
+  rpc_url: https://nile.trongrid.io
+  explorer: https://nile.tronscan.org/#/transaction/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 6
+
+"TTRX:USDC":
+  family: tron
+  blockchain: Tron
+  network: nile
+  rpc_url: https://nile.trongrid.io
+  explorer: https://nile.tronscan.org/#/transaction/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TTRX:USDT":
+  family: tron
+  blockchain: Tron
+  network: nile
+  rpc_url: https://nile.trongrid.io
+  explorer: https://nile.tronscan.org/#/transaction/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+"TTRX:USD1":
+  family: tron
+  blockchain: Tron
+  network: nile
+  rpc_url: https://nile.trongrid.io
+  explorer: https://nile.tronscan.org/#/transaction/{tx_hash}
+  native_asset: false
+  contract_address: "TBD"
+  drip_amount: "10"
+  decimals: 18
+
+# ------------------------------------------------------------------
+# TON Family
+# ------------------------------------------------------------------
+
+TTON:
+  family: ton
+  blockchain: TON
+  network: testnet
+  rpc_url: https://testnet.toncenter.com/api/v2/
+  explorer: https://testnet.tonscan.org/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 9
+
+# ------------------------------------------------------------------
+# Hedera Family
+# ------------------------------------------------------------------
+
+THBAR:
+  family: hedera
+  blockchain: Hedera
+  network: testnet
+  rpc_url: https://testnet.mirrornode.hedera.com
+  explorer: https://hashscan.io/testnet/transaction/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 8
+
+"THBAR:USDC":
+  family: hedera
+  blockchain: Hedera
+  network: testnet
+  rpc_url: https://testnet.mirrornode.hedera.com
+  explorer: https://hashscan.io/testnet/transaction/{tx_hash}
+  native_asset: false
+  token_id: "TBD"
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# UTXO Family
+# ------------------------------------------------------------------
+
+TBTC4:
+  family: utxo
+  blockchain: Bitcoin
+  network: testnet4
+  rpc_url: https://blockstream.info/testnet/api
+  explorer: https://blockstream.info/testnet/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "0.001"
+  decimals: 8
+  coin_type: 1
+
+TBCH:
+  family: utxo
+  blockchain: Bitcoin Cash
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 8
+  coin_type: 145
+
+TBTG:
+  family: utxo
+  blockchain: Bitcoin Gold
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 8
+  coin_type: 156
+
+TLTC:
+  family: utxo
+  blockchain: Litecoin
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 8
+  coin_type: 2
+
+TDOGE:
+  family: utxo
+  blockchain: Dogecoin
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "100"
+  decimals: 8
+  coin_type: 3
+
+TDASH:
+  family: utxo
+  blockchain: Dash
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 8
+  coin_type: 5
+
+# ------------------------------------------------------------------
+# Algorand
+# ------------------------------------------------------------------
+
+TALGO:
+  family: algorand
+  blockchain: Algorand
+  network: testnet
+  rpc_url: https://testnet-api.algonode.cloud
+  explorer: https://testnet.algoexplorer.io/tx/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Cardano
+# ------------------------------------------------------------------
+
+TADA:
+  family: cardano
+  blockchain: Cardano
+  network: preprod
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "5"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# EOS Family
+# ------------------------------------------------------------------
+
+TEOS:
+  family: eos
+  blockchain: EOS
+  network: jungle4
+  rpc_url: https://jungle4.cryptolions.io
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 4
+
+"TEOS:BOX":
+  family: eos
+  blockchain: EOS
+  network: jungle4
+  rpc_url: https://jungle4.cryptolions.io
+  explorer: TBD
+  native_asset: false
+  drip_amount: "10"
+  decimals: 6
+
+"TEOS:CHEX":
+  family: eos
+  blockchain: EOS
+  network: jungle4
+  rpc_url: https://jungle4.cryptolions.io
+  explorer: TBD
+  native_asset: false
+  drip_amount: "10"
+  decimals: 8
+
+"TEOS:IQ":
+  family: eos
+  blockchain: EOS
+  network: jungle4
+  rpc_url: https://jungle4.cryptolions.io
+  explorer: TBD
+  native_asset: false
+  drip_amount: "10"
+  decimals: 3
+
+"TEOS:USDT":
+  family: eos
+  blockchain: EOS
+  network: jungle4
+  rpc_url: https://jungle4.cryptolions.io
+  explorer: TBD
+  native_asset: false
+  drip_amount: "10"
+  decimals: 4
+
+# ------------------------------------------------------------------
+# Substrate Family
+# ------------------------------------------------------------------
+
+TDOT:
+  family: substrate
+  blockchain: Polkadot
+  network: westend
+  rpc_url: wss://westend-rpc.polkadot.io
+  explorer: https://westend.subscan.io/extrinsic/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 12
+
+TPOLYX:
+  family: substrate
+  blockchain: Polymesh
+  network: testnet
+  rpc_url: wss://testnet-rpc.polymesh.network
+  explorer: TBD
+  native_asset: true
+  drip_amount: "10"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Stacks
+# ------------------------------------------------------------------
+
+TSTX:
+  family: stacks
+  blockchain: Stacks
+  network: testnet
+  rpc_url: https://stacks-node-api.testnet.stacks.co
+  explorer: https://explorer.stacks.co/txid/{tx_hash}?chain=testnet
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Flow
+# ------------------------------------------------------------------
+
+TFLOW:
+  family: flow
+  blockchain: Flow
+  network: testnet
+  rpc_url: access.devnet.nodes.onflow.org:9000
+  explorer: https://testnet.flowscan.org/transaction/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 8
+
+# ------------------------------------------------------------------
+# VeChain Family
+# ------------------------------------------------------------------
+
+TVET:
+  family: vechain
+  blockchain: VeChain
+  network: testnet
+  rpc_url: https://testnet.veblocks.net
+  explorer: https://explore-testnet.vechain.org/transactions/{tx_hash}
+  native_asset: true
+  drip_amount: "100"
+  decimals: 18
+
+"TVET:VTHO":
+  family: vechain
+  blockchain: VeChain
+  network: testnet
+  rpc_url: https://testnet.veblocks.net
+  explorer: https://explore-testnet.vechain.org/transactions/{tx_hash}
+  native_asset: false
+  drip_amount: "1000"
+  decimals: 18
+
+# ------------------------------------------------------------------
+# Tezos
+# ------------------------------------------------------------------
+
+TXTZ:
+  family: tezos
+  blockchain: Tezos
+  network: ghostnet
+  rpc_url: https://rpc.ghostnet.teztnets.com
+  explorer: https://ghostnet.tzkt.io/{tx_hash}
+  native_asset: true
+  drip_amount: "1"
+  decimals: 6
+
+# ------------------------------------------------------------------
+# Zcash
+# ------------------------------------------------------------------
+
+TZEC:
+  family: zcash
+  blockchain: Zcash
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.01"
+  decimals: 8
+
+# ------------------------------------------------------------------
+# Internet Computer
+# ------------------------------------------------------------------
+
+TICP:
+  family: icp
+  blockchain: Internet Computer
+  network: mainnet
+  rpc_url: https://ic0.app
+  explorer: https://dashboard.internetcomputer.org/transaction/{tx_hash}
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 8
+  note: "ICP testnet/devnet uses dfx CLI — may not have a publicly accessible faucet"
+
+# ------------------------------------------------------------------
+# Bittensor
+# ------------------------------------------------------------------
+
+TTAO:
+  family: bittensor
+  blockchain: Bittensor
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "0.1"
+  decimals: 9
+
+# ------------------------------------------------------------------
+# Canton
+# ------------------------------------------------------------------
+
+TCANTON:
+  family: canton
+  blockchain: Canton
+  network: testnet
+  rpc_url: TBD
+  explorer: TBD
+  native_asset: true
+  drip_amount: "1"
+  decimals: 10
+  note: "Canton uses Daml ledger — NOT a UTXO chain. Requires separate research."
