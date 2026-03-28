@@ -49,11 +49,18 @@ def load_registry() -> dict[str, dict]:
     return _REGISTRY
 
 
+REQUIRED_FIELDS = {"family", "blockchain", "network", "native_asset", "drip_amount", "decimals"}
+
+
 def get_asset_config(asset_id: str) -> dict:
     registry = load_registry()
     if asset_id not in registry:
         raise KeyError(f"Unknown asset: {asset_id}")
-    return registry[asset_id]
+    config = registry[asset_id]
+    missing = REQUIRED_FIELDS - set(config.keys())
+    if missing:
+        raise ValueError(f"Asset {asset_id} missing required fields: {missing}")
+    return config
 
 
 def get_all_assets() -> dict[str, dict]:

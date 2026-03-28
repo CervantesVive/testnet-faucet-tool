@@ -51,3 +51,12 @@ def test_get_handler_not_implemented(tmp_path, monkeypatch):
     monkeypatch.setattr(reg, "_get_chains_yaml_path", lambda: chains_yaml)
     with pytest.raises(NotImplementedError):
         reg.get_handler("HTETH")  # evm.py doesn't exist yet
+
+
+def test_get_asset_config_missing_fields(tmp_path, monkeypatch):
+    incomplete_yaml = yaml.dump({"INCOMPLETE": {"family": "evm"}})
+    chains_yaml = tmp_path / "chains.yaml"
+    chains_yaml.write_text(incomplete_yaml)
+    monkeypatch.setattr(reg, "_get_chains_yaml_path", lambda: chains_yaml)
+    with pytest.raises(ValueError, match="missing required fields"):
+        reg.get_asset_config("INCOMPLETE")

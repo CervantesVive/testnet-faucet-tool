@@ -61,7 +61,7 @@ def status(family):
     if family:
         native_assets = {k: v for k, v in native_assets.items() if v.get("family") == family}
 
-    for asset_id, config in sorted(native_assets.items()):
+    for asset_id in sorted(native_assets):
         try:
             handler = get_handler(asset_id)
             balances = asyncio.run(handler.get_faucet_balance())
@@ -69,6 +69,8 @@ def status(family):
                 console.print(f"{asset_id}: {balance} {token}")
         except NotImplementedError:
             console.print(f"[dim]{asset_id}: handler not yet implemented[/dim]")
+        except Exception as e:
+            console.print(f"[red]{asset_id}: error — {e}[/red]")
 
 
 @main.command()
