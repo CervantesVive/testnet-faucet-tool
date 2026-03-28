@@ -86,6 +86,8 @@ def init(family):
     """Initialize faucet wallets for FAMILY — derive addresses and print for manual funding."""
     if family == "evm":
         _init_evm()
+    elif family == "solana":
+        _init_solana()
     else:
         console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
 
@@ -132,6 +134,34 @@ def _init_evm():
             cfg.get("drip_amount", ""),
         )
     console.print(table)
+
+
+def _init_solana():
+    """Derive or load Solana faucet keypair and print for manual funding."""
+    import os
+
+    keypair_b58 = os.environ.get("FAUCET_SOLANA_KEYPAIR")
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+
+    if keypair_b58:
+        from solders.keypair import Keypair
+        keypair = Keypair.from_base58_string(keypair_b58)
+        console.print("[green]Solana faucet address (from FAUCET_SOLANA_KEYPAIR):[/green]")
+    elif mnemonic:
+        from solders.keypair import Keypair
+        keypair = Keypair.from_seed_phrase_and_passphrase(mnemonic, "")
+        console.print("[green]Solana faucet address (BIP-39 mnemonic, ed25519):[/green]")
+    else:
+        console.print("[red]Error:[/red] Set FAUCET_SOLANA_KEYPAIR or FAUCET_MNEMONIC environment variable")
+        return
+
+    pubkey = str(keypair.pubkey())
+    console.print(f"  {pubkey}")
+    console.print()
+    console.print("[bold]To fund this wallet on Solana devnet:[/bold]")
+    console.print(f"  solana airdrop 2 {pubkey} --url devnet")
+    console.print()
+    console.print("[dim]Or visit: https://faucet.solana.com and paste the address above[/dim]")
 
 
 if __name__ == "__main__":
