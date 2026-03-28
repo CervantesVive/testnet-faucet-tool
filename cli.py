@@ -90,6 +90,20 @@ def init(family):
         _init_solana()
     elif family == "cosmos":
         _init_cosmos()
+    elif family == "sui":
+        _init_sui()
+    elif family == "aptos":
+        _init_aptos()
+    elif family == "near":
+        _init_near()
+    elif family == "xrp":
+        _init_xrp()
+    elif family == "stellar":
+        _init_stellar()
+    elif family == "tron":
+        _init_tron()
+    elif family == "ton":
+        _init_ton()
     else:
         console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
 
@@ -221,6 +235,116 @@ def _init_cosmos():
             cfg.get("drip_amount", ""),
         )
     console.print(table)
+
+
+def _init_sui():
+    """Print Sui faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Sui faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Sui testnet wallet at: https://faucet.devnet.sui.io/[/dim]")
+
+
+def _init_aptos():
+    """Print Aptos faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Aptos faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Aptos testnet wallet at: https://aptos.dev/en/network/faucet[/dim]")
+
+
+def _init_near():
+    """Print NEAR faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]NEAR faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your NEAR testnet wallet at: https://near-faucet.io/[/dim]")
+
+
+def _init_xrp():
+    """Derive XRP faucet address using xrpl-py if available."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    try:
+        from xrpl.wallet import Wallet
+        if mnemonic:
+            wallet = Wallet.from_mnemonic(mnemonic)
+        else:
+            wallet = Wallet.from_seed(private_key)
+        console.print("[green]XRP faucet address:[/green]")
+        console.print(f"  {wallet.classic_address}")
+    except Exception:
+        source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+        console.print(f"[green]XRP faucet wallet configured (from {source})[/green]")
+        console.print("[dim]Fund your XRP testnet wallet at: https://xrpl.org/xrp-testnet-faucet.html[/dim]")
+
+
+def _init_stellar():
+    """Derive Stellar faucet address using stellar-sdk if available."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    try:
+        from stellar_sdk import Keypair
+        if private_key:
+            keypair = Keypair.from_secret(private_key)
+        else:
+            # Derive from mnemonic using default path
+            keypair = Keypair.from_mnemonic_phrase(mnemonic)
+        console.print("[green]Stellar faucet address:[/green]")
+        console.print(f"  {keypair.public_key}")
+    except Exception:
+        source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+        console.print(f"[green]Stellar faucet wallet configured (from {source})[/green]")
+        console.print("[dim]Fund your Stellar testnet wallet at: https://laboratory.stellar.org/#account-creator[/dim]")
+
+
+def _init_tron():
+    """Print Tron faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]Tron faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your Tron testnet wallet at: https://nileex.io/join/getJoinPage[/dim]")
+
+
+def _init_ton():
+    """Print TON faucet wallet configuration."""
+    import os
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]TON faucet wallet configured (from {source})[/green]")
+    console.print("[dim]Fund your TON testnet wallet at: https://t.me/testgiver_ton_bot[/dim]")
 
 
 if __name__ == "__main__":
