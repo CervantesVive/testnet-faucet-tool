@@ -5,6 +5,7 @@
 - Run tests: `.venv/bin/python -m pytest tests/ -q`
 - Install deps: `.venv/bin/pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -e ".[<extras>,dev]"`
 - `config/chains.yaml` is auto-restored by `conftest.py` if deleted — don't worry about it
+- Outside pytest, run `git restore config/` first if config/ is missing — conftest only restores during test sessions
 
 ## Architecture
 - Handlers in `handlers/<family>.py` extending `BaseHandler` (4 abstract methods: `drip`, `validate_address`, `get_faucet_balance`, `supported_assets`)
@@ -26,7 +27,7 @@
 - `console.print(table)` truncates wide columns in narrow test terminals — print key values (addresses, hashes) on their own line before/after tables so tests can assert on them
 
 ## Phase completion
-- Phases 1–4 done (EVM, Solana, Cosmos + sui/aptos/near/xrp/stellar/tron/ton) — 230 tests
+- Phases 1–5 done (EVM, Solana, Cosmos, Phase 4 chains, UTXO) — 272 tests
 - pyproject.toml optional-dep groups NOT yet added for Phase 4 — add if installing from scratch
 
 ## Phase 4 handler notes
@@ -35,6 +36,12 @@
 - near/tron/ton use aiohttp + cryptography for raw JSON-RPC; cryptography also NOT in venv
 - near/tron/ton get_faucet_balance always returns "no wallet configured" (address derivation unavailable without cryptography)
 - Stellar: network passphrase derived via _get_network_passphrase() from config["network"] — never hardcode Network.TESTNET_NETWORK_PASSPHRASE
+
+## Phase 5 handler notes (UTXO)
+- bitcoinlib, bit NOT installed — utxo.py uses raw secp256k1 math (same pattern as tron.py)
+- cryptography also NOT in venv — _get_faucet_address raises RuntimeError, handler returns "no wallet configured"
+- 5 of 6 UTXO assets have `rpc_url: TBD` — `_drip_native` guards on this before any network call
+- TBTC4 uses Blockstream API: UTXO fetch, raw tx build, broadcast via POST to /tx
 
 ## aiohttp async mock pattern (Phase 4 handlers)
 - Patch at `handlers.<name>.aiohttp.ClientSession`; both session and response need `__aenter__`/`__aexit__` as AsyncMock
