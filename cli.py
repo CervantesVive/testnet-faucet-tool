@@ -104,6 +104,8 @@ def init(family):
         _init_tron()
     elif family == "ton":
         _init_ton()
+    elif family == "utxo":
+        _init_utxo()
     else:
         console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
 
@@ -345,6 +347,43 @@ def _init_ton():
     source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
     console.print(f"[green]TON faucet wallet configured (from {source})[/green]")
     console.print("[dim]Fund your TON testnet wallet at: https://t.me/testgiver_ton_bot[/dim]")
+
+
+def _init_utxo():
+    """Print UTXO faucet wallet configuration."""
+    import os
+    from rich.table import Table
+
+    mnemonic = os.environ.get("FAUCET_MNEMONIC")
+    private_key = os.environ.get("FAUCET_PRIVATE_KEY")
+    if not mnemonic and not private_key:
+        console.print("[red]Error:[/red] Set FAUCET_MNEMONIC or FAUCET_PRIVATE_KEY environment variable")
+        return
+    source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
+    console.print(f"[green]UTXO faucet wallet configured (from {source})[/green]")
+
+    assets = get_all_assets()
+    utxo_native = {
+        k: v for k, v in assets.items()
+        if v.get("family") == "utxo" and v.get("native_asset")
+    }
+
+    console.print(f"\n[bold]Fund faucet wallet on {len(utxo_native)} UTXO chains:[/bold]")
+
+    table = Table()
+    table.add_column("Asset")
+    table.add_column("Blockchain")
+    table.add_column("Coin Type")
+    table.add_column("Drip Amount")
+
+    for asset_id, cfg in sorted(utxo_native.items()):
+        table.add_row(
+            asset_id,
+            cfg.get("blockchain", ""),
+            str(cfg.get("coin_type", "")),
+            cfg.get("drip_amount", ""),
+        )
+    console.print(table)
 
 
 if __name__ == "__main__":
