@@ -256,6 +256,34 @@ def drip(asset_id, address):
 
 ## 4. Phased Implementation Plan
 
+### Development Environment
+
+Python environment uses a `.venv` at the project root (gitignored). Always activate or call via `.venv/bin/python` / `.venv/bin/pytest`.
+
+```bash
+# One-time setup (already done for phases 1–2)
+python3 -m venv .venv
+
+# Install for a new phase — add the extras group to pyproject.toml first, then:
+.venv/bin/pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -e ".[<extras>,dev]"
+
+# Run tests
+.venv/bin/python -m pytest tests/ -q
+```
+
+Each phase adds an optional-dependencies group to `pyproject.toml`:
+```toml
+[project.optional-dependencies]
+evm    = ["web3>=6.0", "eth-account>=0.11", "eth-utils>=3.0"]
+solana = ["solana>=0.34", "solders>=0.21"]
+cosmos = ["cosmpy>=0.9", "bech32>=1.2"]   # example — verify versions before installing
+```
+
+**Testing conventions (learned from phases 1–2):**
+- Rate limiter `DB_PATH` is a module-level constant. Patch it in tests via `monkeypatch.setattr(rl, "DB_PATH", tmp_path / "test.db")` — use pytest's `tmp_path` fixture, not `tempfile.gettempdir()`.
+- CLI `drip` calls `asyncio.run()` internally. Integration tests invoking `drip` via `CliRunner` must be **synchronous** (no `@pytest.mark.asyncio`).
+- `tests/conftest.py` auto-restores `config/chains.yaml` from git if missing — no manual setup needed.
+
 ### Phase 0 — Skeleton (Day 1)
 - [ ] Project scaffold: `pyproject.toml`, CLI entrypoint, directory structure
 - [ ] `BaseHandler` abstract class
@@ -266,32 +294,33 @@ def drip(asset_id, address):
 
 **Deliverable:** `faucet list` works and prints all assets from a fully-populated `chains.yaml`. The registry is populated with metadata for all assets in Phase 0 (data entry only — handlers are stubbed).
 
-### Phase 1 — EVM Family (Days 2–3)
+### Phase 1 — EVM Family (Days 2–3) ✅ COMPLETE
 Covers **34 chains, 72 assets** (34 native coins + 38 ERC-20/L2 tokens) — almost half the entire scope.
 
 **Note:** TAVAXP (Avalanche P-Chain) is excluded from EVM — P-Chain uses a different protocol. See Phase 6.
 
-- [ ] `evm.py` handler: native transfers + ERC-20 transfers
-- [ ] Address validation via `eth_utils.is_address()`
-- [ ] HD wallet derivation from mnemonic (all EVM chains share one key)
-- [ ] Registry entries for all 32 EVM chains with RPC URLs
-- [ ] `faucet init evm` — derive + display addresses for each chain
-- [ ] `faucet drip HTETH <address>` end-to-end working
-- [ ] ERC-20 token transfer (requires contract ABI — standard ERC-20 `transfer()`)
+- [x] `evm.py` handler: native transfers + ERC-20 transfers
+- [x] Address validation via `eth_utils.is_address()`
+- [x] HD wallet derivation from mnemonic (all EVM chains share one key)
+- [x] Registry entries for all 32 EVM chains with RPC URLs
+- [x] `faucet init evm` — derive + display addresses for each chain
+- [x] `faucet drip HTETH <address>` end-to-end working
+- [x] ERC-20 token transfer (requires contract ABI — standard ERC-20 `transfer()`)
 
-**Dependencies:** `web3.py`, `eth-account`, `eth-utils`
+**Dependencies:** `web3>=6.0`, `eth-account>=0.11`, `eth-utils>=3.0` (in `pyproject.toml` `[evm]` extras)
 
 **Known risk:** Sourcing initial funds for 32 chains. Many have public faucets but they're manual/CAPTCHA-gated. This is a one-time bootstrapping pain. Document the faucet URL for each chain in the registry.
 
-### Phase 2 — Solana (Day 3)
+### Phase 2 — Solana (Day 3) ✅ COMPLETE
 Covers **1 chain, 12 assets**.
 
-- [ ] `solana.py` handler: `requestAirdrop` for native SOL
-- [ ] SPL token transfers (for TSOL:USDC, TSOL:USDT, etc.)
-- [ ] Address validation via `solders` or `solana-py`
-- [ ] Registry entries for all 12 Solana assets
+- [x] `solana.py` handler: `requestAirdrop` for native SOL
+- [x] SPL token transfers (for TSOL:USDC, TSOL:USDT, etc.)
+- [x] Address validation via `solders.pubkey.Pubkey.from_string()`
+- [x] Registry entries for all 12 Solana assets
+- [x] `faucet init solana` — prints faucet pubkey + funding instructions
 
-**Dependencies:** `solana-py` or `solders`
+**Dependencies:** `solana>=0.34`, `solders>=0.21` (in `pyproject.toml` `[solana]` extras)
 
 **Note:** SPL token transfers require a funded wallet (can't airdrop tokens). The native SOL airdrop is free. For tokens, you'll need to acquire testnet SPL tokens separately — there's no universal SPL faucet.
 
