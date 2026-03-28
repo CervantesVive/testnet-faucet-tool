@@ -46,23 +46,23 @@ def test_get_asset_config_unknown(tmp_path, monkeypatch):
 
 
 def test_get_handler_not_implemented(tmp_path, monkeypatch):
-    minimal_with_solana = yaml.dump({
-        "TSOL": {
-            "family": "solana",
-            "blockchain": "Solana",
-            "network": "devnet",
+    minimal_with_unknown = yaml.dump({
+        "TFOO": {
+            "family": "unknown_future_chain",
+            "blockchain": "FutureChain",
+            "network": "testnet",
             "native_asset": True,
             "drip_amount": "1",
             "decimals": 9,
         }
     })
     chains_yaml = tmp_path / "chains.yaml"
-    chains_yaml.write_text(minimal_with_solana)
+    chains_yaml.write_text(minimal_with_unknown)
     monkeypatch.setattr(reg, "_get_chains_yaml_path", lambda: chains_yaml)
     reg._REGISTRY = None
     reg._HANDLER_CACHE.clear()
     with pytest.raises(NotImplementedError):
-        reg.get_handler("TSOL")  # solana.py not yet implemented
+        reg.get_handler("TFOO")  # unknown_future_chain has no handler
 
 
 def test_get_asset_config_missing_fields(tmp_path, monkeypatch):
