@@ -1,0 +1,16 @@
+# Custodian Faucet Wallet Configuration
+# Encrypt with: sops --encrypt --age <public-key> wallets.yaml > wallets.yaml.enc
+# Decrypt with: sops --decrypt wallets.yaml.enc > wallets.yaml
+# NEVER commit the unencrypted wallets.yaml — add it to .gitignore
+
+# Shared HD wallet mnemonic for EVM, Cosmos, UTXO chains
+hd_mnemonic: "your twelve word mnemonic phrase goes here do not use this example"
+
+# Chain-specific keypairs (for non-HD chains)
+solana_private_key: "base58-encoded-private-key"
+near_private_key: "ed25519:base58-encoded-key"
+sui_private_key: "base64-encoded-key"
+aptos_private_key: "hex-encoded-key"
+
+# Age public key used to encrypt this file
+age_public_key: "age1..."
