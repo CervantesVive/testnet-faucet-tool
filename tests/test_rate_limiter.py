@@ -52,3 +52,9 @@ def test_record_drip_updates_on_repeat():
     # Source type changed, remaining should still indicate blocked
     allowed_2, _ = rate_limiter.check_rate_limit("HTETH", "0xabc", "external_faucet")
     assert not allowed_2
+
+
+def test_unknown_source_type_defaults_to_self_funded():
+    ttl = rate_limiter.get_ttl("unknown_source")
+    assert ttl == rate_limiter.DEFAULT_TTLS["self_funded"]
+    assert ttl == 300
