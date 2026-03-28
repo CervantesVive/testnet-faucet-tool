@@ -235,7 +235,22 @@ Some chains have public faucet APIs that don't require a funded wallet:
 | XRP Testnet | `https://faucet.altnet.rippletest.net/accounts` | Creates + funds accounts |
 | Google Cloud Faucet | Web-only (CAPTCHA-gated) | Not scriptable |
 
-The `external_faucet.py` handler wraps these APIs as a zero-setup option for supported chains. When both methods exist, the tool should prefer the external faucet (free) and fall back to self-funded (reliable).
+The `external_faucet.py` handler wraps these APIs as a zero-setup option for supported chains. When both methods exist, the tool should prefer self-funded (reliable) and fall back to external faucet (free but unreliable).
+
+### 3.6 Resolved Architecture Decisions
+
+**Async in Click CLI:** Each Click command wraps async handler calls with `asyncio.run()`. No additional libraries needed:
+```python
+@click.command()
+def drip(asset_id, address):
+    result = asyncio.run(handler.drip(address, asset_id, amount))
+```
+
+**Wallet encryption:** Use `sops` with `age` backend. `faucet init` generates an age keypair; `wallets.yaml` is encrypted with `sops --encrypt --age <public-key>`. Handlers load keys via `sops --decrypt wallets.yaml`. Age is preferred over GPG for simplicity.
+
+**Funding preference:** Self-funded wallet is primary; external faucet is fallback only. Reason: external faucets are unreliable (CAPTCHA, rate limits, downtime). Section 3.5 is updated accordingly.
+
+**Rate limiter scope:** The SQLite rate limiter tracks both self-funded drips (protect wallet balance) and external faucet calls (respect API limits). Each source has its own TTL configuration.
 
 ---
 
@@ -249,10 +264,12 @@ The `external_faucet.py` handler wraps these APIs as a zero-setup option for sup
 - [ ] CLI commands: `list`, `status`, `drip` (stubbed)
 - [ ] SQLite rate limiter
 
-**Deliverable:** `faucet list` works and prints all 144 assets from the registry.
+**Deliverable:** `faucet list` works and prints all assets from a fully-populated `chains.yaml`. The registry is populated with metadata for all assets in Phase 0 (data entry only — handlers are stubbed).
 
 ### Phase 1 — EVM Family (Days 2–3)
-Covers **32 chains, 66 assets** — almost half the entire scope.
+Covers **34 chains, 72 assets** (34 native coins + 38 ERC-20/L2 tokens) — almost half the entire scope.
+
+**Note:** TAVAXP (Avalanche P-Chain) is excluded from EVM — P-Chain uses a different protocol. See Phase 6.
 
 - [ ] `evm.py` handler: native transfers + ERC-20 transfers
 - [ ] Address validation via `eth_utils.is_address()`
@@ -303,7 +320,9 @@ Chains with scriptable faucet APIs or simple SDKs.
 **Dependencies:** `sui-py`, `aptos-sdk`, `near-api-py`, `xrpl-py`, `stellar-sdk`, `tronpy`, `tonsdk`
 
 ### Phase 5 — UTXO Family (Days 7–8)
-Covers **5 chains, 7 assets**. Hardest family.
+Covers **6 chains, 7 assets** (TBTC4, TBCH, TBTG, TLTC, TDOGE, TDASH). Hardest family.
+
+**Note:** TCANTON is excluded from UTXO — Canton uses Daml ledger technology, not UTXO. See Phase 6.
 
 - [ ] `utxo.py` handler: UTXO selection, tx construction, signing, broadcast
 - [ ] Bitcoin testnet (TBTC4) via BlockCypher or Blockstream API
@@ -311,7 +330,7 @@ Covers **5 chains, 7 assets**. Hardest family.
 - [ ] Dogecoin testnet (TDOGE)
 - [ ] Dash testnet (TDASH)
 - [ ] Bitcoin Cash testnet (TBCH)
-- [ ] Canton (TCANTON) — research needed, may not be standard UTXO
+- [ ] Bitcoin Gold testnet (TBTG)
 
 **Dependencies:** `bitcoinlib` or `bit`, `httpx` for block explorer APIs
 
@@ -347,16 +366,16 @@ Each of these is a standalone handler with its own SDK.
 | Phase | Scope | Assets covered | Cumulative % | Time |
 |-------|-------|----------------|-------------|------|
 | 0 | Skeleton | 0 | 0% | 1 day |
-| 1 | EVM | 66 | 46% | 2 days |
-| 2 | Solana | 12 | 54% | 0.5 day |
-| 3 | Cosmos | 14 | 64% | 2 days |
-| 4 | Easy API chains | 24 | 80% | 2 days |
-| 5 | UTXO | 7 | 85% | 2 days |
-| 6 | Remaining | 21 | 100% | 3 days |
+| 1 | EVM | 72 | 50% | 2 days |
+| 2 | Solana | 12 | 58% | 0.5 day |
+| 3 | Cosmos | 14 | 68% | 2 days |
+| 4 | Easy API chains | ~22 | 83% | 2 days |
+| 5 | UTXO | 6 | 87% | 2 days |
+| 6 | Remaining | ~28 | 100% | 3 days |
 | 7 | Polish | — | — | 1 day |
-| **Total** | | **144** | **100%** | **~13.5 days** |
+| **Total** | | **~154** | **100%** | **~13.5 days** |
 
-Phase 1 alone gets you to 46% coverage. Phases 1–4 get you to 80%. The long tail (UTXO + exotic chains) is the remaining 20% but takes 40% of the time.
+Phase 1 alone gets you to 50% coverage. Phases 1–4 get you to 83%. The long tail (UTXO + exotic chains) is the remaining 17% but takes 40% of the time.
 
 ---
 
@@ -364,14 +383,15 @@ Phase 1 alone gets you to 46% coverage. Phases 1–4 get you to 80%. The long ta
 
 Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured, `[x]` = working
 
-### EVM Family (32 chains, 66 assets)
+### EVM Family (34 chains, 72 assets)
 
 **Native coins:**
 - [ ] HTETH — Ethereum (Holesky)
 - [ ] TARBETH — Arbitrum Sepolia
 - [ ] TAVAXC — Avalanche C-Chain Fuji
-- [ ] TAVAXP — Avalanche P-Chain Fuji
+- [ ] TAVAXP — Avalanche P-Chain Fuji  # NOTE: This will be moved to Phase 6 / avalanche.py handler — P-Chain is NOT EVM
 - [ ] TBASEETH — Base Sepolia
+- [ ] TPOLYGON — Polygon Amoy Testnet (native coin needed for TPOLYGON:* token gas)
 - [ ] TBERA — Berachain Testnet
 - [ ] TBSC — BNB Smart Chain Testnet
 - [ ] TCELO — Celo Alfajores
@@ -415,15 +435,15 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 - [ ] TEUROC — Euro Coin (Ethereum)
 - [ ] TFMF — Formosa Financial (Ethereum)
 - [ ] TFLR:WFLR — Wrapped Flare (Flare)
-- [ ] GHCN — Himalaya Coin (Ethereum)
-- [ ] GHDO — Himalaya Dollar (Ethereum)
+- [ ] GHCN — Himalaya Coin (Ethereum)  # NOTE: unconfirmed testnet asset — verify BitGo ID before implementing
+- [ ] GHDO — Himalaya Dollar (Ethereum)  # NOTE: unconfirmed testnet asset — verify BitGo ID before implementing
 - [ ] TARBETH:LINK — Chainlink (Arbitrum)
 - [ ] TARBETH:XSGD — XSGD (Arbitrum)
 - [ ] TAVAXC:LINK — Chainlink (Avalanche)
 - [ ] TAVAXC:XSGD — XSGD (Avalanche)
 - [ ] TBASEETH:USDC — USDC (Base)
 - [ ] TJOVAYETH:USDCE — Bridged USDC (Mantle)
-- [ ] TMATIC — Matic (Ethereum)
+- [ ] TMATIC — Matic (Ethereum)  # NOTE: TMATIC is an ERC-20 on Ethereum mainnet, NOT the Polygon native coin. TPOLYGON is the registry key for Polygon native.
 - [ ] TMORPHETH:USD1 — USD1 (Morph)
 - [ ] TMSN — meson.network (Ethereum)
 - [ ] TOPETH:WCT — WalletConnect (Optimism)
@@ -455,7 +475,7 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 - [ ] TSOL:RAY — Raydium (Solana)
 - [ ] TSOL:SLND — Solend (Solana)
 - [ ] TSOL:SRM — Serum (Solana)
-- [ ] SOL:FORD — Forward Industries (Solana)
+- [ ] SOL:FORD — Forward Industries (Solana)  # NOTE: unconfirmed testnet asset — verify BitGo ID before implementing
 
 ### Cosmos Family (8 chains, 14 assets)
 
@@ -499,8 +519,8 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 ### Stellar Family (1 chain, 4 assets)
 
 - [ ] TXLM — Stellar Testnet — has friendbot
-- [ ] TUSDC — Stellar USDC
-- [ ] HTETH — Stellar ETH
+- [ ] TUSDC — Stellar USDC  # NOTE: verify actual BitGo asset ID — may be TXLM:USDC to avoid collision with EVM TUSDC
+- [ ] HTETH — Stellar ETH  # NOTE: verify actual BitGo asset ID — HTETH is the Ethereum Holesky native coin; this is likely a different ID for Stellar ETH
 - [ ] TBST — BitGo Shield Token (Stellar)
 
 ### Tron Family (1 chain, 4 assets)
@@ -519,7 +539,7 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 - [ ] THBAR — Hedera Testnet
 - [ ] THBAR:USDC — Hedera USDC
 
-### UTXO Family (5 chains, 7 assets)
+### UTXO Family (6 chains, 7 assets)
 
 - [ ] TBTC4 — Bitcoin Testnet4
 - [ ] TBCH — Bitcoin Cash Testnet
@@ -527,9 +547,9 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 - [ ] TLTC — Litecoin Testnet
 - [ ] TDOGE — Dogecoin Testnet
 - [ ] TDASH — Dash Testnet
-- [ ] TCANTON — Canton Testnet
+- [ ] TCANTON — Canton Testnet  # NOTE: Canton is NOT a UTXO chain (uses Daml). Moved to Phase 6 / canton.py handler.
 
-### Remaining Standalone Chains (12 assets)
+### Remaining Standalone Chains (17 assets)
 
 - [ ] TALGO — Algorand Testnet
 - [ ] TADA — Cardano Preview/Preprod
@@ -548,7 +568,6 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 - [ ] TZEC — Zcash Testnet
 - [ ] TICP — Internet Computer (dfx)
 - [ ] TTAO — Bittensor Testnet
-- [ ] TTON — TON Testnet
 
 ---
 
@@ -572,7 +591,7 @@ Status key: `[ ]` = not started, `[~]` = handler exists but asset not configured
 If I were you, I'd do **Phase 0 + Phase 1** this week. That gives you:
 
 - A working CLI framework
-- 66 assets covered (46% of total) with one handler
+- 72 assets covered (~50% of total) with one handler
 - A pattern that every subsequent handler copies
 
-The EVM handler is the highest-leverage work because one module covers 32 chains. Every other handler covers 1–8 chains. Start where the ROI is highest.
+The EVM handler is the highest-leverage work because one module covers 34 chains. Every other handler covers 1–8 chains. Start where the ROI is highest.
