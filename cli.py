@@ -1,0 +1,82 @@
+import asyncio
+import click
+from core.registry import get_all_assets, get_handler, get_asset_config
+from core.reporter import print_drip_result, print_asset_table, console
+
+
+@click.group()
+def main():
+    """Custodian testnet faucet — fund test wallets across 144 assets."""
+
+
+@main.command()
+@click.option("--family", help="Filter by chain family (e.g. evm, solana)")
+@click.option("--status", type=click.Choice(["funded", "all"]), default="all")
+def list(family, status):
+    """List all supported assets."""
+    assets = get_all_assets()
+    if family:
+        assets = {k: v for k, v in assets.items() if v.get("family") == family}
+    print_asset_table(assets)
+
+
+@main.command()
+@click.argument("asset_ids")
+@click.argument("address")
+@click.option("--dry-run", is_flag=True, help="Validate but don't send")
+def drip(asset_ids, address, dry_run):
+    """Send testnet tokens to ADDRESS for one or more ASSET_IDS (comma-separated)."""
+    for asset_id in asset_ids.split(","):
+        asset_id = asset_id.strip()
+        try:
+            config = get_asset_config(asset_id)
+        except KeyError as e:
+            console.print(f"[red]Error:[/red] {e}")
+            continue
+
+        try:
+            handler = get_handler(asset_id)
+        except NotImplementedError as e:
+            console.print(f"[yellow]Skipping {asset_id}:[/yellow] {e}")
+            continue
+
+        if not handler.validate_address(address):
+            console.print(f"[red]Invalid address for {asset_id}:[/red] {address}")
+            continue
+
+        if dry_run:
+            console.print(f"[dim]Dry run:[/dim] would send {config.get('drip_amount')} {asset_id} to {address}")
+            continue
+
+        result = asyncio.run(handler.drip(address, asset_id, config.get("drip_amount", "0")))
+        print_drip_result(result)
+
+
+@main.command()
+@click.option("--family", help="Filter by chain family")
+def status(family):
+    """Show faucet wallet balances."""
+    assets = get_all_assets()
+    native_assets = {k: v for k, v in assets.items() if v.get("native_asset")}
+    if family:
+        native_assets = {k: v for k, v in native_assets.items() if v.get("family") == family}
+
+    for asset_id, config in sorted(native_assets.items()):
+        try:
+            handler = get_handler(asset_id)
+            balances = asyncio.run(handler.get_faucet_balance())
+            for token, balance in balances.items():
+                console.print(f"{asset_id}: {balance} {token}")
+        except NotImplementedError:
+            console.print(f"[dim]{asset_id}: handler not yet implemented[/dim]")
+
+
+@main.command()
+@click.argument("family")
+def init(family):
+    """Initialize faucet wallets for FAMILY — derive addresses and print for manual funding."""
+    console.print(f"[yellow]init for {family} not yet implemented[/yellow]")
+
+
+if __name__ == "__main__":
+    main()
