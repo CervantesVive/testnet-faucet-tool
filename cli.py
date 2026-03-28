@@ -1,8 +1,10 @@
 import asyncio
+import csv
 import click
 from core.registry import get_all_assets, get_handler, get_asset_config
 from core.reporter import print_drip_result, print_asset_table, console
 from core.rate_limiter import check_rate_limit, record_drip
+from core.retry import retry_drip
 
 
 @click.group()
@@ -53,10 +55,148 @@ def drip(asset_ids, address, dry_run):
             console.print(f"[yellow]Rate limited:[/yellow] {asset_id} → {address} — try again in {remaining:.0f}s")
             continue
 
-        result = asyncio.run(handler.drip(address, asset_id, config.get("drip_amount", "0")))
+        result = asyncio.run(retry_drip(handler, address, asset_id, config.get("drip_amount", "0")))
         print_drip_result(result)
         if result.success:
             record_drip(asset_id, address)
+
+
+@main.command()
+@click.argument("csv_file", type=click.Path(exists=True))
+@click.option("--asset", "default_asset", default=None, help="Default asset ID for single-column CSV files")
+def batch(csv_file, default_asset):
+    """Run drip requests from a CSV file.
+
+    CSV format: either 'asset_id,address' (2 columns) or 'address' (1 column, requires --asset flag).
+    Lines starting with # and empty lines are skipped.
+    """
+    from rich.table import Table
+
+    results = []
+
+    with open(csv_file, newline="") as f:
+        for line_num, raw_line in enumerate(f, start=1):
+            stripped = raw_line.strip()
+            # Skip empty lines and comments
+            if not stripped or stripped.startswith("#"):
+                continue
+
+            # Parse columns
+            reader = csv.reader([stripped])
+            row = next(reader)
+
+            if len(row) == 2:
+                asset_id, address = row[0].strip(), row[1].strip()
+            elif len(row) == 1 and default_asset:
+                asset_id, address = default_asset, row[0].strip()
+            elif len(row) == 1 and not default_asset:
+                results.append({
+                    "asset": "?",
+                    "address": row[0].strip(),
+                    "status": "ERROR",
+                    "detail": "Single-column CSV requires --asset flag",
+                })
+                continue
+            else:
+                results.append({
+                    "asset": "?",
+                    "address": stripped[:40],
+                    "status": "ERROR",
+                    "detail": f"Malformed row (line {line_num})",
+                })
+                continue
+
+            # Get config
+            try:
+                config = get_asset_config(asset_id)
+            except KeyError as e:
+                results.append({
+                    "asset": asset_id,
+                    "address": address,
+                    "status": "ERROR",
+                    "detail": str(e),
+                })
+                continue
+
+            # Get handler
+            try:
+                handler = get_handler(asset_id)
+            except NotImplementedError as e:
+                results.append({
+                    "asset": asset_id,
+                    "address": address,
+                    "status": "SKIP",
+                    "detail": str(e),
+                })
+                continue
+
+            # Validate address
+            if not handler.validate_address(address):
+                results.append({
+                    "asset": asset_id,
+                    "address": address,
+                    "status": "ERROR",
+                    "detail": "Invalid address",
+                })
+                continue
+
+            # Rate limit check
+            allowed, remaining = check_rate_limit(asset_id, address)
+            if not allowed:
+                results.append({
+                    "asset": asset_id,
+                    "address": address,
+                    "status": "RATE_LIMITED",
+                    "detail": f"Try again in {remaining:.0f}s",
+                })
+                continue
+
+            # Execute drip
+            try:
+                result = asyncio.run(handler.drip(address, asset_id, config.get("drip_amount", "0")))
+                if result.success:
+                    record_drip(asset_id, address)
+                    results.append({
+                        "asset": asset_id,
+                        "address": address,
+                        "status": "OK",
+                        "detail": result.tx_hash or "",
+                    })
+                else:
+                    results.append({
+                        "asset": asset_id,
+                        "address": address,
+                        "status": "FAILED",
+                        "detail": result.error or "Unknown error",
+                    })
+            except Exception as e:
+                results.append({
+                    "asset": asset_id,
+                    "address": address,
+                    "status": "ERROR",
+                    "detail": str(e),
+                })
+
+    # Print summary table
+    if not results:
+        console.print("[yellow]No valid rows found in CSV file.[/yellow]")
+        return
+
+    table = Table(title="Batch Drip Results")
+    table.add_column("Asset")
+    table.add_column("Address")
+    table.add_column("Status")
+    table.add_column("Detail")
+
+    for r in results:
+        style = "green" if r["status"] == "OK" else "red" if r["status"] in ("ERROR", "FAILED") else "yellow"
+        table.add_row(r["asset"], r["address"], f"[{style}]{r['status']}[/{style}]", r["detail"])
+
+    console.print(table)
+
+    ok_count = sum(1 for r in results if r["status"] == "OK")
+    fail_count = len(results) - ok_count
+    console.print(f"\nProcessed {len(results)} rows: {ok_count} succeeded, {fail_count} failed/skipped")
 
 
 @main.command()
