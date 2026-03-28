@@ -21,3 +21,10 @@ def ensure_chains_yaml():
         )
         if result.returncode != 0 or not chains_yaml.exists():
             pytest.skip("config/chains.yaml missing and could not be restored from git")
+
+
+@pytest.fixture(autouse=True)
+def _isolate_history_log(tmp_path, monkeypatch):
+    """Redirect drip history log to a temp file so tests don't write to ~/.bitgo-faucet/."""
+    import core.logger as logger_mod
+    monkeypatch.setattr(logger_mod, "LOG_PATH", tmp_path / "history.log")
