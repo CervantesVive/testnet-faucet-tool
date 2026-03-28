@@ -200,6 +200,9 @@ def _init_cosmos():
 
     source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
     console.print(f"[green]Cosmos faucet addresses (from {source}):[/green]")
+    for prefix, address in sorted(prefix_to_address.items()):
+        console.print(f"  {prefix}: {address}")
+    console.print()
 
     table = Table()
     table.add_column("Asset")
