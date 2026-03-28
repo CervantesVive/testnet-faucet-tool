@@ -328,7 +328,7 @@ def dashboard(family):
         try:
             handler = get_handler(asset_id)
             balances = asyncio.run(handler.get_faucet_balance())
-            balance_str = list(balances.values())[0] if balances else "unknown"
+            balance_str = next(iter(balances.values()), "unknown") if balances else "unknown"
         except (NotImplementedError, Exception) as e:
             balance_str = f"error: {e}"
 
