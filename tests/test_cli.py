@@ -1,3 +1,4 @@
+import pytest
 from click.testing import CliRunner
 from unittest.mock import patch
 import yaml
@@ -10,6 +11,15 @@ MINIMAL_YAML = yaml.dump({
     "TSOL": {"family": "solana", "blockchain": "Solana", "network": "devnet",
              "native_asset": True, "drip_amount": "0.1", "decimals": 9},
 })
+
+
+@pytest.fixture(autouse=True)
+def reset_registry_and_cache():
+    reg._REGISTRY = None
+    reg._HANDLER_CACHE.clear()
+    yield
+    reg._REGISTRY = None
+    reg._HANDLER_CACHE.clear()
 
 
 def make_chains_yaml(tmp_path):
