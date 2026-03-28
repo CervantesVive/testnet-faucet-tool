@@ -2,6 +2,7 @@ import asyncio
 import click
 from core.registry import get_all_assets, get_handler, get_asset_config
 from core.reporter import print_drip_result, print_asset_table, console
+from core.rate_limiter import check_rate_limit, record_drip
 
 
 @click.group()
@@ -11,8 +12,7 @@ def main():
 
 @main.command()
 @click.option("--family", help="Filter by chain family (e.g. evm, solana)")
-@click.option("--status", type=click.Choice(["funded", "all"]), default="all")
-def list(family, status):
+def list(family):
     """List all supported assets."""
     assets = get_all_assets()
     if family:
@@ -48,8 +48,15 @@ def drip(asset_ids, address, dry_run):
             console.print(f"[dim]Dry run:[/dim] would send {config.get('drip_amount')} {asset_id} to {address}")
             continue
 
+        allowed, remaining = check_rate_limit(asset_id, address)
+        if not allowed:
+            console.print(f"[yellow]Rate limited:[/yellow] {asset_id} → {address} — try again in {remaining:.0f}s")
+            continue
+
         result = asyncio.run(handler.drip(address, asset_id, config.get("drip_amount", "0")))
         print_drip_result(result)
+        if result.success:
+            record_drip(asset_id, address)
 
 
 @main.command()

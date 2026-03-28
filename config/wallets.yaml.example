@@ -1,7 +1,13 @@
-# Custodian Faucet Wallet Configuration
-# Encrypt with: sops --encrypt --age <public-key> wallets.yaml > wallets.yaml.enc
-# Decrypt with: sops --decrypt wallets.yaml.enc > wallets.yaml
-# NEVER commit the unencrypted wallets.yaml — add it to .gitignore
+# Custodian Faucet Wallet Configuration (LOCAL USE ONLY)
+# This file contains sensitive key material and must NEVER be committed to git.
+#
+# Encryption workflow (for local backup):
+#   1. Generate age key: age-keygen -o ~/.age/Custodian-faucet.key
+#   2. Encrypt:          sops --encrypt --age $(cat ~/.age/Custodian-faucet.key | grep "public key" | cut -d: -f2) wallets.yaml > wallets.yaml.enc
+#   3. Store the .enc file locally (outside the repo) or in a password manager.
+#   4. To decrypt:       sops --decrypt wallets.yaml.enc > wallets.yaml
+#
+# Both wallets.yaml and wallets.yaml.enc are gitignored.
 
 # Shared HD wallet mnemonic for EVM, Cosmos, UTXO chains
 hd_mnemonic: "your twelve word mnemonic phrase goes here do not use this example"
