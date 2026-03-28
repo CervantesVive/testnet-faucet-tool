@@ -48,9 +48,7 @@ TOKEN_CONFIG = {
 # Test data
 # ---------------------------------------------------------------------------
 
-# Valid Stellar public key (G...)
-VALID_STELLAR_ADDRESS = "GAHJJJKMOKYE4RVPZEWZTKH5FVI4PA3VL7GK2LFNUBSGBV"
-# Another valid address for faucet wallet
+# Valid Stellar public key (G...) — used as faucet wallet address
 FAUCET_STELLAR_ADDRESS = "GD6GKRABNDVYDETEZJQEPS7IBQMERCN44R5RCI4LJNX6BMYQM2KPTURZ"
 
 INVALID_STELLAR_ADDRESS = "not-a-valid-stellar-address"
