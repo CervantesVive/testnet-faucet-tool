@@ -37,3 +37,11 @@ class BaseHandler(ABC):
     def supported_assets(self) -> list[str]:
         """Return list of Custodian testnet IDs this handler can process."""
         ...
+
+    def get_faucet_address(self) -> str | None:
+        """Return the faucet's own address for auto-refill, or None if not configured.
+
+        Override in handlers that support auto-top. The monitor calls this to determine
+        the recipient address for self-drip refills.
+        """
+        return None

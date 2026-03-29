@@ -34,3 +34,15 @@ async def test_concrete_handler_drip():
     result = await h.drip("0xabc", "TEST", "1.0")
     assert result.success
     assert result.asset == "TEST"
+
+
+def test_get_faucet_address_returns_none_by_default():
+    """BaseHandler.get_faucet_address() returns None — subclasses override it."""
+    class ConcreteHandler2(BaseHandler):
+        async def drip(self, address, asset_id, amount): ...
+        def validate_address(self, address): return True
+        async def get_faucet_balance(self): return {}
+        def supported_assets(self): return []
+
+    handler = ConcreteHandler2({})
+    assert handler.get_faucet_address() is None
