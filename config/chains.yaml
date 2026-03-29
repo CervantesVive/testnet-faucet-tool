@@ -793,6 +793,7 @@ TSOL:
   family: solana
   blockchain: Solana
   network: devnet
+  refill_source: airdrop
   rpc_url: https://api.devnet.solana.com
   explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
   native_asset: true

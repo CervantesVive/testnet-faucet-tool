@@ -59,6 +59,17 @@
 ## Phase 7 notes (Polish)
 - New CLI commands: `batch`, `refill`, `dashboard`, `history`
 - `core/retry.py` — `retry_drip()` with exponential backoff; only retries transient errors (not TBD/validation)
-- `core/logger.py` — JSON lines logging to `~/.bitgo-faucet/history.log`; `LOG_PATH` is monkeypatchable like `DB_PATH`
+- `core/logger.py` — JSON lines logging to `~/.testnet-faucet/history.log`; `LOG_PATH` is monkeypatchable like `DB_PATH`
 - History log isolation: `conftest.py` has autouse fixture redirecting `LOG_PATH` to `tmp_path`
 - cli.py `list` command shadows Python builtin `list()` — use `next(iter(...))` instead of `list(...)` in cli.py module scope
+
+## Monitoring (Phase 8)
+- Data directory renamed: `~/.bitgo-faucet/` → `~/.testnet-faucet/`
+- Env vars renamed: `BITGO_FAUCET_DB_PATH` → `FAUCET_DB_PATH`, `BITGO_FAUCET_LOG_PATH` → `FAUCET_LOG_PATH`
+- Alert config: `~/.testnet-faucet/alerts.yaml` (or `FAUCET_ALERTS_CONFIG` env var); template at `config/alerts.yaml.example`
+- New commands: `faucet check` (one-shot, exit 1 on LOW/ERROR), `faucet monitor --interval 1h` (daemon)
+- `core/alerting.py` — `send_alert(message, low_assets)` dispatches to log/Slack/webhook/email; `ALERTS_LOG_PATH` monkeypatchable in tests
+- `core/monitor.py` — `check_all()`, `run_check()`, `_parse_interval()`; monkeypatch `core.alerting.ALERTS_CONFIG_PATH` and `core.alerting.ALERTS_LOG_PATH` in tests
+- Auto-top: set `refill_source: airdrop` (or `external_faucet`) in chains.yaml; handler must implement `get_faucet_address()` returning non-None
+- Alert log rotation: `TimedRotatingFileHandler(when="midnight")`, `backup_count` days retained (default 30)
+- Cron example: `0 * * * * /path/to/.venv/bin/python -m faucet check >> ~/.testnet-faucet/cron.log 2>&1`
