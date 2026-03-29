@@ -101,7 +101,7 @@ TSOL:
   ...
 ```
 
-If absent, the asset requires manual funding. Auto-top reuses the handler's existing `drip()` method, calling it with the faucet's own address as the recipient. Rate limiting is bypassed for self-refill (it is a different operation from user-facing drips).
+If absent, the asset requires manual funding. Auto-top reuses the handler's existing `drip()` method, calling it with the faucet's own address as the recipient. `core/monitor.py` calls `handler.drip()` directly — it does not go through `check_rate_limit` / `record_drip`, since self-refill is not a user-facing drip and should not consume rate limit quota.
 
 ### Alert batching
 
