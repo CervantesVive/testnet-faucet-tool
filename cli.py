@@ -12,7 +12,7 @@ from core.monitor import run_check
 
 @click.group()
 def main():
-    """BitGo testnet faucet — fund test wallets across 144 assets."""
+    """Testnet faucet — fund test wallets across 144 assets."""
 
 
 @main.command()

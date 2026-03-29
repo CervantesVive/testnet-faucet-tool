@@ -518,7 +518,7 @@ Key decisions:
 - Show all faucet wallet balances grouped by family
 - Highlight low-balance wallets
 - Implement `faucet refill` — shows which wallets are low + fund instructions
-- Logging to `~/.bitgo-faucet/history.log`
+- Logging to `~/.testnet-faucet/history.log`
 
 ### AFTER (Adversarial Review)
 

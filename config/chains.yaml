@@ -1,7 +1,7 @@
 # ============================================================
-# BitGo Testnet Faucet — Chain & Asset Registry
+# Testnet Faucet — Chain & Asset Registry
 # ============================================================
-# Each key is the BitGo asset ID.
+# Each key is the asset ID.
 # Colons in keys (e.g. TSOL:USDC) are valid YAML when quoted.
 # ============================================================
 

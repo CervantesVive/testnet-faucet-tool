@@ -1,6 +1,6 @@
 # Blockchain & Digital Assets Primer
 
-A beginner-friendly guide to the concepts you need to understand the BitGo Testnet Faucet Tool.
+A beginner-friendly guide to the concepts you need to understand the Testnet Faucet Tool.
 
 ---
 
@@ -44,7 +44,7 @@ A **digital asset** is anything of value that lives on a blockchain. The two mos
 | **Coin** | The blockchain's built-in currency, used to pay transaction fees | ETH on Ethereum, SOL on Solana, BTC on Bitcoin |
 | **Token** | A custom asset created by a smart contract *on top of* an existing blockchain | USDC on Ethereum, BUSD on BNB Smart Chain |
 
-In this tool, every asset has a **BitGo asset ID** like `HTETH` (Holesky testnet ETH) or `HTETH:GOUSD` (the GOUSD token on Holesky Ethereum). The colon format `CHAIN:TOKEN` tells you the token lives on that chain.
+In this tool, every asset has an **asset ID** like `HTETH` (Holesky testnet ETH) or `HTETH:GOUSD` (the GOUSD token on Holesky Ethereum). The colon format `CHAIN:TOKEN` tells you the token lives on that chain.
 
 ### Reading
 - [Coins vs. Tokens (Ledger Academy)](https://www.ledger.com/academy/crypto/what-is-the-difference-between-coins-and-tokens)
@@ -214,7 +214,7 @@ Now you can connect the dots between blockchain concepts and the tool's codebase
 Every asset the faucet can dispense is registered here. Each entry looks like this:
 
 ```yaml
-HTETH:                           # BitGo asset ID
+HTETH:                           # asset ID
   family: evm                    # Chain family (determines which handler to use)
   blockchain: Ethereum           # Human-readable chain name
   network: holesky               # Which testnet
@@ -277,7 +277,7 @@ CLI prints: "Sent 0.05 HTETH - view at https://holesky.etherscan.io/tx/0x..."
 | Term | Definition |
 |------|-----------|
 | **Asset** | Any coin or token tracked by the faucet tool |
-| **Asset ID** | BitGo's identifier for an asset (e.g., `HTETH`, `TSOL`) |
+| **Asset ID** | This tool's identifier for an asset (e.g., `HTETH`, `TSOL`) |
 | **Block** | A batch of transactions permanently recorded on the blockchain |
 | **Block explorer** | A website for browsing blockchain transactions and addresses |
 | **Chain family** | A group of blockchains that share the same technology and can be handled by the same code |

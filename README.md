@@ -1,4 +1,4 @@
-# BitGo Testnet Faucet Tool
+# Testnet Faucet Tool
 
 CLI tool for funding test wallets across 144 assets on 70+ blockchains. Plugin-per-chain-family design with a single `faucet` entrypoint.
 
@@ -94,7 +94,7 @@ faucet history
 faucet history --limit 50
 ```
 
-History is stored as JSON lines at `~/.bitgo-faucet/history.log`.
+History is stored as JSON lines at `~/.testnet-faucet/history.log`.
 
 ### Initialize faucet wallets
 
@@ -136,7 +136,7 @@ faucet init cosmos
 
 ## Rate Limiting
 
-A local SQLite rate limiter at `~/.bitgo-faucet/rate_limits.db` prevents accidental wallet drain:
+A local SQLite rate limiter at `~/.testnet-faucet/rate_limits.db` prevents accidental wallet drain:
 
 - Self-funded drips: 5 min cooldown per asset+address
 - External faucet calls: 24 hr cooldown

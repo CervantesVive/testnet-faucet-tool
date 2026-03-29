@@ -1,4 +1,4 @@
-# BitGo Testnet Faucet Tool
+# Testnet Faucet Tool
 
 ## Environment
 - Python venv: `.venv/` in project root — use absolute path, worktrees share it
@@ -62,6 +62,10 @@
 - `core/logger.py` — JSON lines logging to `~/.testnet-faucet/history.log`; `LOG_PATH` is monkeypatchable like `DB_PATH`
 - History log isolation: `conftest.py` has autouse fixture redirecting `LOG_PATH` to `tmp_path`
 - cli.py `list` command shadows Python builtin `list()` — use `next(iter(...))` instead of `list(...)` in cli.py module scope
+
+## Naming conventions
+- `chains.yaml` note fields saying "verify BitGo ID before implementing" are intentional — they reference BitGo's external asset ID system and should not be removed
+- Error message strings in core/ are not test-covered — check for stale env var names when renaming variables (caught: BITGO_FAUCET_DB_PATH in rate_limiter.py error message survived Phase 8 rename)
 
 ## Monitoring (Phase 8)
 - Data directory renamed: `~/.bitgo-faucet/` → `~/.testnet-faucet/`

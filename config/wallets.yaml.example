@@ -1,9 +1,9 @@
-# BitGo Faucet Wallet Configuration (LOCAL USE ONLY)
+# Faucet Wallet Configuration (LOCAL USE ONLY)
 # This file contains sensitive key material and must NEVER be committed to git.
 #
 # Encryption workflow (for local backup):
-#   1. Generate age key: age-keygen -o ~/.age/bitgo-faucet.key
-#   2. Encrypt:          sops --encrypt --age $(cat ~/.age/bitgo-faucet.key | grep "public key" | cut -d: -f2) wallets.yaml > wallets.yaml.enc
+#   1. Generate age key: age-keygen -o ~/.age/testnet-faucet.key
+#   2. Encrypt:          sops --encrypt --age $(cat ~/.age/testnet-faucet.key | grep "public key" | cut -d: -f2) wallets.yaml > wallets.yaml.enc
 #   3. Store the .enc file locally (outside the repo) or in a password manager.
 #   4. To decrypt:       sops --decrypt wallets.yaml.enc > wallets.yaml
 #
