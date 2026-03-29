@@ -1,0 +1,34 @@
+# Alert channel configuration for the testnet faucet monitor.
+# Copy to ~/.testnet-faucet/alerts.yaml and edit as needed.
+# Override location with: FAUCET_ALERTS_CONFIG=/path/to/alerts.yaml
+
+alerts:
+  # Log channel — always-on by default. Rotates daily, retains 30 days.
+  log:
+    enabled: true
+    path: ~/.testnet-faucet/alerts.log
+    backup_count: 30
+
+  # Slack incoming webhook — post to a channel when wallets are low.
+  slack:
+    enabled: false
+    webhook_url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+  # Generic webhook — covers Discord, PagerDuty, custom endpoints.
+  webhook:
+    enabled: false
+    url: https://your-service.example.com/hook
+    method: POST
+    headers:               # optional
+      Authorization: Bearer YOUR_TOKEN
+
+  # Email via SMTP.
+  email:
+    enabled: false
+    smtp_host: smtp.example.com
+    smtp_port: 587
+    username: faucet@example.com
+    password: YOUR_SMTP_PASSWORD
+    from: faucet@example.com
+    to:
+      - ops@example.com

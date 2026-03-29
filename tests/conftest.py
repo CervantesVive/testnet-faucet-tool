@@ -28,3 +28,10 @@ def _isolate_history_log(tmp_path, monkeypatch):
     """Redirect drip history log to a temp file so tests don't write to ~/.testnet-faucet/."""
     import core.logger as logger_mod
     monkeypatch.setattr(logger_mod, "LOG_PATH", tmp_path / "history.log")
+
+
+@pytest.fixture(autouse=True)
+def _isolate_alerts_log(tmp_path, monkeypatch):
+    """Redirect alerts log to a temp file so tests don't write to ~/.testnet-faucet/."""
+    import core.alerting as alerting_mod
+    monkeypatch.setattr(alerting_mod, "ALERTS_LOG_PATH", tmp_path / "alerts.log")
