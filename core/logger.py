@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from handlers.base import DripResult
 
-LOG_PATH = Path(os.environ.get("BITGO_FAUCET_LOG_PATH", Path.home() / ".bitgo-faucet" / "history.log"))
+LOG_PATH = Path(os.environ.get("FAUCET_LOG_PATH", Path.home() / ".testnet-faucet" / "history.log"))
 
 
 def log_drip(address: str, result: DripResult) -> None:
