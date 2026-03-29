@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
 
-DB_PATH = Path(os.environ.get("Custodian_FAUCET_DB_PATH", Path.home() / ".Custodian-faucet" / "rate_limits.db"))
+DB_PATH = Path(os.environ.get("FAUCET_DB_PATH", Path.home() / ".testnet-faucet" / "rate_limits.db"))
 
 # Default TTL (seconds) per source type
 DEFAULT_TTLS = {
