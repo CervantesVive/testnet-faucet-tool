@@ -1,4 +1,4 @@
-# Getting Started with the Custodian Testnet Faucet Tool
+# Getting Started with the Testnet Faucet Tool
 
 A step-by-step guide for first-time users.
 
@@ -152,7 +152,7 @@ Replace the example phrase above with your own testnet mnemonic. The phrase abov
 Here is the entry for HTETH (Holesky testnet Ether), annotated:
 
 ```yaml
-HTETH:                                        # Custodian asset ID — used in all CLI commands
+HTETH:                                        # asset ID — used in all CLI commands
   family: evm                                 # Chain family — determines which handler code runs
   blockchain: Ethereum                        # Human-readable chain name (display only)
   network: holesky                            # Testnet name (e.g. holesky, sepolia, devnet)

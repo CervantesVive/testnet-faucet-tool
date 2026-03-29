@@ -35,7 +35,7 @@ class BaseHandler(ABC):
 
     @abstractmethod
     def supported_assets(self) -> list[str]:
-        """Return list of Custodian testnet IDs this handler can process."""
+        """Return list of testnet asset IDs this handler can process."""
         ...
 
     def get_faucet_address(self) -> str | None:

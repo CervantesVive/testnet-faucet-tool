@@ -19,7 +19,7 @@ def _get_db() -> sqlite3.Connection:
     except PermissionError as e:
         raise RuntimeError(
             f"Cannot create rate limit database directory {DB_PATH.parent}: {e}\n"
-            f"Set Custodian_FAUCET_DB_PATH environment variable to override."
+            f"Set FAUCET_DB_PATH environment variable to override."
         ) from e
 
     conn = sqlite3.connect(DB_PATH)

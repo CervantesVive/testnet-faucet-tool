@@ -1,8 +1,8 @@
-# Custodian Testnet Faucet Tool — Framework Design & Implementation Plan
+# Testnet Faucet Tool — Framework Design & Implementation Plan
 
 ## 1. Problem Statement
 
-Fund test wallets across **144 assets on 70+ blockchains** supported by Custodian. The tool must be:
+Fund test wallets across **144 assets on 70+ blockchains**. The tool must be:
 
 - **Extensible** — adding a new chain shouldn't require rewriting the core
 - **Personal-first** — designed for one engineer, structured to scale to a team
@@ -15,7 +15,7 @@ Fund test wallets across **144 assets on 70+ blockchains** supported by Custodia
 The tool is a Python CLI with a plugin-per-chain-family design. Think of it like `git` — one entrypoint, many subcommands, each backed by a handler module.
 
 ```
-Custodian-faucet/
+testnet-faucet/
 ├── cli.py                    # Main entrypoint (Click-based CLI)
 ├── config/
 │   ├── chains.yaml           # Chain registry — RPC URLs, faucet sources, amounts
@@ -97,13 +97,13 @@ class BaseHandler(ABC):
 
     @abstractmethod
     def supported_assets(self) -> list[str]:
-        """Return list of Custodian testnet IDs this handler can process."""
+        """Return list of testnet asset IDs this handler can process."""
         ...
 ```
 
 ### 2.2 Chain Registry (chains.yaml)
 
-The registry maps Custodian testnet IDs to handler config. This is the single source of truth.
+The registry maps testnet asset IDs to handler config. This is the single source of truth.
 
 ```yaml
 # Example entries — full registry built incrementally per phase
@@ -220,7 +220,7 @@ This is critical: **you can't send ERC-20 tokens without ETH for gas.** The tool
 
 ### 3.4 Local Rate Limiter
 
-SQLite file at `~/.Custodian-faucet/rate_limits.db`. This is a personal tool, so the rate limiter is mainly a safety net against accidentally draining your faucet wallet with a loop. Simple TTL-based check, same logic as the web faucet but local.
+SQLite file at `~/.testnet-faucet/rate_limits.db`. This is a personal tool, so the rate limiter is mainly a safety net against accidentally draining your faucet wallet with a loop. Simple TTL-based check, same logic as the web faucet but local.
 
 ### 3.5 External Faucet Fallback
 
@@ -385,7 +385,7 @@ Each of these is a standalone handler with its own SDK.
 - [ ] `faucet batch` command — CSV input, parallel execution
 - [ ] Balance monitoring dashboard (terminal-based, `rich` library)
 - [ ] Retry logic with exponential backoff per handler
-- [ ] Logging to `~/.Custodian-faucet/history.log`
+- [ ] Logging to `~/.testnet-faucet/history.log`
 - [ ] `faucet refill` — shows which faucet wallets are low, prints fund instructions
 
 ---
