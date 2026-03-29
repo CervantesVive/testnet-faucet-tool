@@ -1,11 +1,13 @@
 import asyncio
 import csv
+import time
 import click
 from core.registry import get_all_assets, get_handler, get_asset_config
 from core.reporter import print_drip_result, print_asset_table, console
 from core.rate_limiter import check_rate_limit, record_drip
 from core.retry import retry_drip
 from core.logger import log_drip, read_history
+from core.monitor import run_check
 
 
 @click.group()
@@ -900,6 +902,110 @@ def _init_canton():
     source = "FAUCET_MNEMONIC" if mnemonic else "FAUCET_PRIVATE_KEY"
     console.print(f"[green]Canton faucet wallet configured (from {source})[/green]")
     console.print("[dim]No public testnet faucet known — manual funding required[/dim]")
+
+
+@main.command()
+@click.option("--family", help="Filter by chain family")
+@click.option("--threshold", type=float, default=None,
+              help="Low-balance threshold (default: 2x drip_amount per asset)")
+def check(family, threshold):
+    """Check faucet balances, auto-top where possible, and alert on LOW/ERROR wallets.
+
+    Exits with code 1 if any wallet is LOW or ERROR — useful for cron alerting.
+    """
+    import sys
+    from rich.table import Table
+
+    results = run_check(threshold_override=threshold, family=family)
+
+    table = Table(title="Balance Check")
+    table.add_column("Asset", style="cyan")
+    table.add_column("Blockchain")
+    table.add_column("Balance")
+    table.add_column("Threshold")
+    table.add_column("Status")
+    table.add_column("Auto-top")
+
+    ok = low = errors = 0
+    for r in results:
+        if r["status"] == "OK":
+            ok += 1
+            status_cell = "[green]OK[/green]"
+        elif r["status"] == "LOW":
+            low += 1
+            status_cell = "[yellow]LOW[/yellow]"
+        else:
+            errors += 1
+            status_cell = "[red]ERROR[/red]"
+
+        if r.get("auto_top_attempted"):
+            auto_top_cell = (
+                "[green]succeeded[/green]" if r["auto_top_succeeded"]
+                else "[red]failed[/red]"
+            )
+        elif r.get("refill_source"):
+            auto_top_cell = "[dim]no address[/dim]"
+        else:
+            auto_top_cell = ""
+
+        balance_str = (
+            f"{r['balance']:.4g}" if r["balance"] is not None
+            else (r.get("error") or "N/A")
+        )
+        table.add_row(
+            r["asset_id"], r["blockchain"], balance_str,
+            f"{r['threshold']:.4g}", status_cell, auto_top_cell,
+        )
+
+    console.print(table)
+    console.print(f"\nSummary: {ok} OK, {low} LOW, {errors} ERROR")
+
+    if low > 0 or errors > 0:
+        sys.exit(1)
+
+
+@main.command()
+@click.option("--interval", default="1h",
+              help="Check interval. Accepts: 30m, 1h, 6h, 1d (default: 1h)")
+@click.option("--family", help="Filter by chain family")
+@click.option("--threshold", type=float, default=None,
+              help="Low-balance threshold (default: 2x drip_amount per asset)")
+def monitor(interval, family, threshold):
+    """Run continuous balance monitoring. Press Ctrl-C to stop.
+
+    Runs one check immediately, then repeats every --interval. Alerts are
+    dispatched via channels configured in ~/.testnet-faucet/alerts.yaml.
+    """
+    from core.monitor import _parse_interval
+    from datetime import datetime, timezone
+
+    try:
+        interval_secs = _parse_interval(interval)
+    except ValueError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        return
+
+    console.print(f"[cyan]Monitor started[/cyan] — checking every {interval}")
+
+    try:
+        while True:
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            console.print(f"[dim]{ts} Pass started[/dim]")
+
+            results = run_check(threshold_override=threshold, family=family)
+
+            ok = sum(1 for r in results if r["status"] == "OK")
+            low = sum(1 for r in results if r["status"] == "LOW")
+            errs = sum(1 for r in results if r["status"] == "ERROR")
+
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            console.print(
+                f"[dim]{ts} Pass complete: {ok} OK, {low} LOW, {errs} ERROR[/dim]"
+            )
+
+            time.sleep(interval_secs)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Monitor stopped.[/yellow]")
 
 
 if __name__ == "__main__":
