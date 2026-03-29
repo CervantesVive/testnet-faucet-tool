@@ -6,3 +6,4 @@ pytest-of-ivo/
 .pytest_cache/
 config/wallets.yaml
 config/wallets.yaml.enc
+.idea/
