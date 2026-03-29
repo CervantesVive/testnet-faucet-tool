@@ -71,6 +71,27 @@ faucet list
 faucet list --family evm
 ```
 
+### Interactive TUI
+
+```bash
+# Launch the interactive dashboard (htop-style, live-updating)
+faucet tui
+
+# Filter to a specific chain family
+faucet tui --family evm
+
+# Set the monitor check interval
+faucet tui --interval 30m
+```
+
+Keybindings: `1` Dashboard · `2` Monitor · `3` Config Editor · `r` Refresh · `?` Help · `q` Quit
+
+**Dashboard** — live balance table with 30s auto-refresh and OK/LOW/ERROR color coding.
+
+**Monitor** — continuous check passes with in-place updates and a countdown timer between checks.
+
+**Config Editor** — browse and edit `config/chains.yaml` (asset RPC URLs, drip amounts, etc.) and `~/.testnet-faucet/alerts.yaml` (Slack, webhook, email channels) directly from the terminal.
+
 ### Monitor balances
 
 ```bash
@@ -156,6 +177,11 @@ core/
 handlers/
   base.py                 # BaseHandler ABC (drip, validate_address, get_faucet_balance, supported_assets)
   evm.py, solana.py, ...  # One module per chain family
+tui/
+  app.py                  # FaucetApp (Textual) — screen routing, help overlay, keybindings
+  data.py                 # Thread-safe wrappers for check_all/run_check and YAML I/O
+  screens/                # DashboardScreen, MonitorScreen, ConfigEditorScreen
+  widgets/                # BalanceTable, StatusBar, CountdownWidget
 ```
 
 ## Testing
@@ -164,4 +190,4 @@ handlers/
 .venv/bin/python -m pytest tests/ -q
 ```
 
-531 tests covering all handlers, CLI commands, retry logic, and integration scenarios.
+632 tests covering all handlers, CLI commands, retry logic, TUI screens, and integration scenarios.
