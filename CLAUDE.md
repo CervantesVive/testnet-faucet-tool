@@ -67,6 +67,17 @@
 - `chains.yaml` note fields saying "verify Custodian ID before implementing" are intentional — they reference Custodian's external asset ID system and should not be removed
 - Error message strings in core/ are not test-covered — check for stale env var names when renaming variables (caught: Custodian_FAUCET_DB_PATH in rate_limiter.py error message survived Phase 8 rename)
 
+## TUI (Phase TUI)
+- New CLI command: `faucet tui [--family FAMILY] [--interval INTERVAL]` launches Textual app
+- `tui/` package: `app.py`, `data.py`, `screens/`, `widgets/`, `css/`
+- Thread-worker pattern: `check_all()` and `run_check()` call `asyncio.run()` internally — must use `@work(thread=True)` from `textual._work_decorator` to avoid nesting event loops
+- Testing Textual widgets: use `async with app.run_test() as pilot:` (headless); import `work` from `textual._work_decorator` (not `textual.work` or `textual.worker`)
+- Registry cache invalidation: `tui/data.save_chains_yaml()` clears `registry._REGISTRY = None` and `registry._HANDLER_CACHE.clear()` after writes
+- Config editor shows ALL assets (not just native) for browsing/editing; `check_all()` filters native-only for dashboard/monitor
+- `StatusBar` and `CountdownWidget` subclass `Static` — must set `height: 1` via `DEFAULT_CSS` to avoid Textual 8.x `'NoneType' has no attribute 'get_height'` error
+- Keybindings: `1`=Dashboard, `2`=Monitor, `3`=Config, `?`=Help, `q`=Quit, `r`=Refresh (dashboard)
+- Test query pattern: use `app.screen.query_one(...)` not `app.query_one(...)` after `push_screen()`; add `await pilot.pause(0.3+)` after screen switch for workers to complete
+
 ## Monitoring (Phase 8)
 - Data directory renamed: `~/.Custodian-faucet/` → `~/.testnet-faucet/`
 - Env vars renamed: `Custodian_FAUCET_DB_PATH` → `FAUCET_DB_PATH`, `Custodian_FAUCET_LOG_PATH` → `FAUCET_LOG_PATH`

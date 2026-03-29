@@ -1008,5 +1008,15 @@ def monitor(interval, family, threshold):
         console.print("\n[yellow]Monitor stopped.[/yellow]")
 
 
+@main.command()
+@click.option("--family", default=None, help="Filter to a specific chain family")
+@click.option("--interval", default="1h", show_default=True, help="Monitor check interval (e.g. 30m, 1h)")
+def tui(family, interval):
+    """Launch the interactive TUI dashboard."""
+    from tui.app import FaucetApp
+    app = FaucetApp(family=family, interval=interval)
+    app.run()
+
+
 if __name__ == "__main__":
     main()
