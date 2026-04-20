@@ -506,7 +506,7 @@ GHCN:
   contract_address: "TBD"
   drip_amount: "10"
   decimals: 18
-  note: "UNCONFIRMED testnet asset — verify Custodian ID before implementing"
+  note: "UNCONFIRMED testnet asset — contract address needs verification before implementing"
 
 GHDO:
   family: evm
@@ -518,7 +518,7 @@ GHDO:
   contract_address: "TBD"
   drip_amount: "10"
   decimals: 18
-  note: "UNCONFIRMED testnet asset — verify Custodian ID before implementing"
+  note: "UNCONFIRMED testnet asset — contract address needs verification before implementing"
 
 "TARBETH:LINK":
   family: evm
@@ -921,7 +921,7 @@ TSOL:
   mint_address: "TBD"
   drip_amount: "1"
   decimals: 9
-  note: "UNCONFIRMED testnet asset — verify Custodian ID before implementing"
+  note: "UNCONFIRMED testnet asset — mint address needs verification before implementing"
 
 # ------------------------------------------------------------------
 # Cosmos Family
@@ -1247,7 +1247,7 @@ TXLM:
   issuer: "TBD"
   drip_amount: "10"
   decimals: 7
-  note: "Verify Custodian asset ID — may conflict with EVM TUSDC"
+  note: "Verify asset ID — may conflict with EVM TUSDC"
 
 "TXLM:ETH":
   family: stellar
@@ -1260,7 +1260,7 @@ TXLM:
   issuer: "TBD"
   drip_amount: "0.01"
   decimals: 7
-  note: "Verify Custodian asset ID — may conflict with EVM HTETH"
+  note: "Verify asset ID — may conflict with EVM HTETH"
 
 TBST:
   family: stellar

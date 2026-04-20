@@ -64,8 +64,8 @@
 - cli.py `list` command shadows Python builtin `list()` — use `next(iter(...))` instead of `list(...)` in cli.py module scope
 
 ## Naming conventions
-- `chains.yaml` note fields saying "verify Custodian ID before implementing" are intentional — they reference Custodian's external asset ID system and should not be removed
-- Error message strings in core/ are not test-covered — check for stale env var names when renaming variables (caught: Custodian_FAUCET_DB_PATH in rate_limiter.py error message survived Phase 8 rename)
+- `chains.yaml` note fields saying "needs verification before implementing" are intentional — they mark unconfirmed testnet assets whose contract/mint addresses still need to be looked up
+- Error message strings in core/ are not test-covered — check for stale env var names when renaming variables
 
 ## TUI (Phase TUI)
 - New CLI command: `faucet tui [--family FAMILY] [--interval INTERVAL]` launches Textual app
@@ -79,8 +79,8 @@
 - Test query pattern: use `app.screen.query_one(...)` not `app.query_one(...)` after `push_screen()`; add `await pilot.pause(0.3+)` after screen switch for workers to complete
 
 ## Monitoring (Phase 8)
-- Data directory renamed: `~/.Custodian-faucet/` → `~/.testnet-faucet/`
-- Env vars renamed: `Custodian_FAUCET_DB_PATH` → `FAUCET_DB_PATH`, `Custodian_FAUCET_LOG_PATH` → `FAUCET_LOG_PATH`
+- Data directory: `~/.testnet-faucet/`
+- Env vars: `FAUCET_DB_PATH`, `FAUCET_LOG_PATH`
 - Alert config: `~/.testnet-faucet/alerts.yaml` (or `FAUCET_ALERTS_CONFIG` env var); template at `config/alerts.yaml.example`
 - New commands: `faucet check` (one-shot, exit 1 on LOW/ERROR), `faucet monitor --interval 1h` (daemon)
 - `core/alerting.py` — `send_alert(message, low_assets)` dispatches to log/Slack/webhook/email; `ALERTS_LOG_PATH` monkeypatchable in tests
