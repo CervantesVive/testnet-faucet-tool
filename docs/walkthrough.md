@@ -34,20 +34,14 @@ A step-by-step guide for first-time users.
 
 ## 1. Installation
 
-### 1.1 Create the Python virtual environment
+### 1.1 Install dependencies
 
 ```bash
 cd /path/to/testnet-faucet-tool
-python3 -m venv .venv
+uv sync --extra evm --extra solana --extra cosmos --extra dev
 ```
 
-### 1.2 Install the tool and its dependencies
-
-```bash
-.venv/bin/pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -e ".[evm,solana,cosmos,dev]"
-```
-
-The part in `[...]` is the list of **optional dependency groups** to install. Each group adds the Python libraries needed for a specific chain family:
+The `--extra` flags select **optional dependency groups** — each group adds the Python libraries needed for a specific chain family:
 
 | Group | What it installs | When you need it |
 |-------|-----------------|------------------|
@@ -56,24 +50,17 @@ The part in `[...]` is the list of **optional dependency groups** to install. Ea
 | `cosmos` | cosmpy | Cosmos Hub, Osmosis, and other Cosmos SDK chains |
 | `dev` | pytest, rich | Running tests and the CLI |
 
-To use all three chain families at once (as shown above), include all three. If you only need EVM support, `.[evm,dev]` is enough.
+To use all three chain families at once (as shown above), include all four flags. If you only need EVM support, `uv sync --extra evm --extra dev` is enough.
 
 > **Note:** Some chain families (Sui, Aptos, XRP, Stellar, Tron, etc.) do not have installable Python SDKs listed here. The tool handles them differently — see [Walkthrough 4](#7-walkthrough-4--external-faucet-chains-representative-txrp) and the [Troubleshooting](#12-troubleshooting) section.
 
-### 1.3 Verify the installation
+### 1.2 Verify the installation
 
 ```bash
-.venv/bin/faucet --help
+uv run faucet --help
 ```
 
-You should see a list of available commands. If you get `command not found`, make sure you're using `.venv/bin/faucet` with the full path.
-
-> **Tip:** For convenience, you can activate the virtual environment first so `faucet` works without the path prefix:
-> ```bash
-> source .venv/bin/activate
-> faucet --help
-> ```
-> The rest of this guide assumes the venv is activated or you're using `.venv/bin/faucet`.
+You should see a list of available commands. All commands in this guide use the `uv run faucet` prefix, which ensures the correct project environment is used without manual activation.
 
 ---
 
@@ -805,10 +792,10 @@ crontab -e
 
 Add:
 ```
-0 * * * * /path/to/.venv/bin/python -m faucet check >> ~/.testnet-faucet/cron.log 2>&1
+0 * * * * cd /path/to/project && uv run faucet check >> ~/.testnet-faucet/cron.log 2>&1
 ```
 
-Replace `/path/to/` with the absolute path to your project's virtual environment.
+Replace `/path/to/project` with the absolute path to your cloned repository.
 
 ### Auto-top-up
 

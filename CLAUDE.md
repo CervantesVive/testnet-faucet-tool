@@ -1,9 +1,9 @@
 # Testnet Faucet Tool
 
 ## Environment
-- Python venv: `.venv/` in project root — use absolute path, worktrees share it
-- Run tests: `.venv/bin/python -m pytest tests/ -q`
-- Install deps: `.venv/bin/pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -e ".[<extras>,dev]"`
+- Package manager: `uv` — run `uv sync --extra <extras> --extra dev` to install
+- Run tests: `uv run pytest tests/ -q`
+- Install deps: `uv sync --extra evm --extra solana --extra cosmos --extra dev`
 - `config/chains.yaml` is auto-restored by `conftest.py` if deleted — don't worry about it
 - Outside pytest, run `git restore config/` first if config/ is missing — conftest only restores during test sessions
 
@@ -87,4 +87,9 @@
 - `core/monitor.py` — `check_all()`, `run_check()`, `_parse_interval()`; monkeypatch `core.alerting.ALERTS_CONFIG_PATH` and `core.alerting.ALERTS_LOG_PATH` in tests
 - Auto-top: set `refill_source: airdrop` (or `external_faucet`) in chains.yaml; handler must implement `get_faucet_address()` returning non-None
 - Alert log rotation: `TimedRotatingFileHandler(when="midnight")`, `backup_count` days retained (default 30)
-- Cron example: `0 * * * * /path/to/.venv/bin/python -m faucet check >> ~/.testnet-faucet/cron.log 2>&1`
+- Cron example: `0 * * * * cd /path/to/project && uv run faucet check >> ~/.testnet-faucet/cron.log 2>&1`
+
+## Dep group exclusions (pyproject.toml)
+- `vechain` dep group omitted: `thor-devkit` (all versions) pins `eth-abi==2.1.1` → `eth-utils<2`, permanently incompatible with `evm` group's `eth-utils>=3.0`; package abandoned since July 2023
+- `flow` dep group omitted: `flow-py-sdk` chains through `rlp` or `betterproto` (pre-release) to `eth-utils<2`, same conflict with `evm`
+- `stacks` dep group omitted: no Python Stacks (STX) SDK exists on PyPI; handler uses pure aiohttp

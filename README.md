@@ -5,8 +5,7 @@ CLI tool for funding test wallets across 144 assets on 70+ blockchains. Plugin-p
 ## Setup
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -e ".[evm,solana,cosmos,dev]"
+uv sync --extra evm --extra solana --extra cosmos --extra dev
 ```
 
 ## Configuration
@@ -187,7 +186,7 @@ tui/
 ## Testing
 
 ```bash
-.venv/bin/python -m pytest tests/ -q
+uv run pytest tests/ -q
 ```
 
 632 tests covering all handlers, CLI commands, retry logic, TUI screens, and integration scenarios.
