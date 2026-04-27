@@ -1,29 +1,31 @@
 # Getting Started with the Testnet Faucet Tool
 
-A step-by-step guide for first-time users.
+A step-by-step guide that combines hands-on Custodian practice with blockchain concept learning.
 
-**Prerequisite:** This guide assumes you have read the [Blockchain & Digital Assets Primer](blockchain-primer.md). Terms like *testnet*, *faucet*, *chain family*, *native coin*, and *token* are used without re-explanation. When in doubt, refer to the [Glossary](blockchain-primer.md#8-glossary).
-
-**What you will accomplish by the end:**
-- Configure the tool with a test wallet
-- Fund a test address on five representative chain families
+**What you'll accomplish:**
+- Understand the two-wallet model: your Custodian accounts (destinations) vs. the faucet signing wallet (source)
+- Fund your Custodian testnet accounts across five representative chain families
+- Learn the key differences between blockchain families as you go
 - Monitor faucet balances and set up automated alerts
+
+**How to use this guide:** Each walkthrough is self-contained — you can do them in order for a full tour, or jump to the chain family you need. Short learning notes are included inline; follow the links for deeper dives into the [Blockchain & Digital Assets Primer](blockchain-primer.md).
 
 ---
 
 ## Table of Contents
 
 1. [Installation](#1-installation)
-2. [Configuration Deep-Dive](#2-configuration-deep-dive)
-   - [2a. Environment Variables (Wallet Credentials)](#2a-environment-variables-wallet-credentials)
-   - [2b. The Asset Registry (chains.yaml)](#2b-the-asset-registry-chainsyaml)
-   - [2c. Alert Configuration](#2c-alert-configuration)
-3. [Orientation: Read-Only Commands](#3-orientation-read-only-commands)
-4. [Walkthrough 1 — EVM (representative: HTETH)](#4-walkthrough-1--evm-representative-hteth)
-5. [Walkthrough 2 — Solana (representative: TSOL)](#5-walkthrough-2--solana-representative-tsol)
-6. [Walkthrough 3 — Cosmos (representative: TATOM)](#6-walkthrough-3--cosmos-representative-tatom)
-7. [Walkthrough 4 — External-Faucet Chains (representative: TXRP)](#7-walkthrough-4--external-faucet-chains-representative-txrp)
-8. [Walkthrough 5 — UTXO / Bitcoin (representative: TBTC4)](#8-walkthrough-5--utxo--bitcoin-representative-tbtc4)
+2. [The Two-Wallet Model](#2-the-two-wallet-model)
+   - [2a. Your Custodian Accounts (Destinations)](#2a-your-Custodian-accounts-destinations)
+   - [2b. The Faucet Signing Wallet](#2b-the-faucet-signing-wallet)
+   - [2c. The Asset Registry (chains.yaml)](#2c-the-asset-registry-chainsyaml)
+   - [2d. Alert Configuration](#2d-alert-configuration)
+3. [Orientation: Explore the Tool](#3-orientation-explore-the-tool)
+4. [Walkthrough 1 — EVM (Ethereum Holesky: HTETH)](#4-walkthrough-1--evm-ethereum-holesky-hteth)
+5. [Walkthrough 2 — Solana (TSOL)](#5-walkthrough-2--solana-tsol)
+6. [Walkthrough 3 — Cosmos (TATOM)](#6-walkthrough-3--cosmos-tatom)
+7. [Walkthrough 4 — External-Faucet Chains (TXRP)](#7-walkthrough-4--external-faucet-chains-txrp)
+8. [Walkthrough 5 — UTXO / Bitcoin (TBTC4)](#8-walkthrough-5--utxo--bitcoin-tbtc4)
 9. [Batch Operations](#9-batch-operations)
 10. [Monitoring and Alerts](#10-monitoring-and-alerts)
 11. [Drip History](#11-drip-history)
@@ -36,12 +38,16 @@ A step-by-step guide for first-time users.
 
 ### 1.1 Install dependencies
 
+Navigate to the project directory, then install the Python packages for the chain families you'll use:
+
 ```bash
 cd /path/to/testnet-faucet-tool
 uv sync --extra evm --extra solana --extra cosmos --extra dev
 ```
 
-The `--extra` flags select **optional dependency groups** — each group adds the Python libraries needed for a specific chain family:
+> **What is `uv`?** It's a fast Python package manager. `uv sync` reads the project's dependency file and installs exactly the right packages in an isolated environment — nothing conflicts with other Python projects on your machine.
+
+The `--extra` flags select optional dependency groups:
 
 | Group | What it installs | When you need it |
 |-------|-----------------|------------------|
@@ -50,425 +56,353 @@ The `--extra` flags select **optional dependency groups** — each group adds th
 | `cosmos` | cosmpy | Cosmos Hub, Osmosis, and other Cosmos SDK chains |
 | `dev` | pytest, rich | Running tests and the CLI |
 
-To use all three chain families at once (as shown above), include all four flags. If you only need EVM support, `uv sync --extra evm --extra dev` is enough.
-
-> **Note:** Some chain families (Sui, Aptos, XRP, Stellar, Tron, etc.) do not have installable Python SDKs listed here. The tool handles them differently — see [Walkthrough 4](#7-walkthrough-4--external-faucet-chains-representative-txrp) and the [Troubleshooting](#12-troubleshooting) section.
-
 ### 1.2 Verify the installation
 
 ```bash
 uv run faucet --help
 ```
 
-You should see a list of available commands. All commands in this guide use the `uv run faucet` prefix, which ensures the correct project environment is used without manual activation.
+You should see a list of available commands. All commands in this guide use the `uv run faucet` prefix.
 
 ---
 
-## 2. Configuration Deep-Dive
+## 2. The Two-Wallet Model
 
-The tool needs two things to function:
-1. **Credentials** — how to sign transactions (your faucet wallet's key material)
-2. **Asset registry** — what chains and tokens exist, and how to reach them
+Before running any commands, understand the most important concept in this guide. Confusion between these two roles is the most common source of errors.
 
-### 2a. Environment Variables (Wallet Credentials)
+### Two wallets, different jobs
 
-The faucet signs transactions using a wallet you control. You provide the credentials via environment variables, not by editing any files. This keeps secrets out of your repository.
+| | Faucet signing wallet | Your Custodian account |
+|---|---|---|
+| **Role** | Holds the funds; signs and sends transactions | Receives the dripped tokens |
+| **Who controls it** | You (set as an env var) | You (via Custodian) |
+| **Credential** | `FAUCET_MNEMONIC` or `FAUCET_PRIVATE_KEY` | Managed by Custodian |
+| **Holds real money?** | Never — testnet only | Testnet environment only |
 
-#### Primary credentials
+Think of it like a vending machine: your Custodian accounts are the people buying drinks; the faucet signing wallet is the machine's own cash drawer. The machine must have coins loaded before it can give change.
 
-Most chain families share one of these two variables:
-
-| Variable | What it is | Who uses it |
-|----------|-----------|-------------|
-| `FAUCET_MNEMONIC` | A 12- or 24-word BIP-39 seed phrase | EVM, Cosmos, UTXO (Bitcoin family), XRP |
-| `FAUCET_PRIVATE_KEY` | A raw hex private key (`0x...`) | EVM, Cosmos, UTXO (Bitcoin family) |
-
-You only need one. `FAUCET_MNEMONIC` is more convenient because a single seed phrase derives correct addresses for every supported chain family — each family uses a different derivation path internally. `FAUCET_PRIVATE_KEY` is more explicit if you already have a specific key.
-
-> **Security warning:** These credentials give full control over your faucet wallet. Rules:
-> - Use a wallet that holds **testnet coins only** — no real money.
-> - Never commit this variable to version control.
-> - Never reuse a mnemonic from a wallet holding real funds.
-> - See `config/wallets.yaml.example` for an age/sops encryption workflow if you want to store key material safely on disk.
-
-#### Chain-specific credentials
-
-Some chains cannot derive a wallet from the shared mnemonic and require their own variable:
-
-| Variable | Chain | What it is |
-|----------|-------|-----------|
-| `FAUCET_SOLANA_KEYPAIR` | Solana | Base58-encoded 64-byte keypair (preferred for Solana over mnemonic) |
-| `FAUCET_HEDERA_ACCOUNT_ID` | Hedera | Account ID like `0.0.12345` |
-| `FAUCET_EOS_ACCOUNT` | EOS | Account name like `myfaucet123` |
-| `FAUCET_ALGORAND_ADDRESS` | Algorand | Algorand wallet address |
-| `FAUCET_STACKS_ADDRESS` | Stacks | Address like `ST1PQHQ...` |
-| `FAUCET_TEZOS_ADDRESS` | Tezos | Address like `tz1...` |
-| `FAUCET_VECHAIN_ADDRESS` | VeChain | Address like `0x...` |
-| `FAUCET_ICP_PRINCIPAL` | ICP | Principal ID like `xxxxx-xxxxx-...-cai` |
-
-You only need to set these if you are actively using that chain family.
-
-#### Path overrides
-
-The tool stores its state in `~/.testnet-faucet/`. You can override individual paths:
-
-| Variable | Default path | Purpose |
-|----------|-------------|---------|
-| `FAUCET_DB_PATH` | `~/.testnet-faucet/rate_limits.db` | Rate limit database |
-| `FAUCET_LOG_PATH` | `~/.testnet-faucet/history.log` | Drip history log |
-| `FAUCET_ALERTS_CONFIG` | `~/.testnet-faucet/alerts.yaml` | Alert channel config |
-
-You will rarely need to change these. They are most useful in testing and CI environments.
-
-#### Setting variables for a session
-
-```bash
-export FAUCET_MNEMONIC="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-```
-
-Replace the example phrase above with your own testnet mnemonic. The phrase above is a well-known test mnemonic — **never use it for anything real**.
+> **Learn more:** [What is a wallet? → Primer §4](blockchain-primer.md#4-addresses-and-wallets)
 
 ---
 
-### 2b. The Asset Registry (chains.yaml)
+### 2a. Your Custodian Accounts (Destinations)
 
-`config/chains.yaml` is the single source of truth for all 144 testnet assets the tool supports. You generally **do not need to edit this file** to use the tool — it comes pre-configured. But understanding it helps you interpret command output and troubleshoot issues.
+Your Custodian testnet accounts are the destinations for every `faucet drip` command. Before you can fund them, you need their **deposit addresses**.
 
-#### Anatomy of an entry
+> **Term: Deposit address** — A blockchain address that Custodian controls on your behalf. When tokens arrive at this address, they appear in your Custodian wallet balance. Each chain family has a different address format. [→ Primer §4](blockchain-primer.md#4-addresses-and-wallets)
 
-Here is the entry for HTETH (Holesky testnet Ether), annotated:
+**How to find a deposit address in Custodian:**
 
-```yaml
-HTETH:                                        # asset ID — used in all CLI commands
-  family: evm                                 # Chain family — determines which handler code runs
-  blockchain: Ethereum                        # Human-readable chain name (display only)
-  network: holesky                            # Testnet name (e.g. holesky, sepolia, devnet)
-  rpc_url: https://rpc.holesky.ethpandaops.io # Node endpoint the tool talks to
-  explorer: https://holesky.etherscan.io/tx/{tx_hash}  # Block explorer URL template
-  native_asset: true                          # true = coin, false = token (see below)
-  drip_amount: "0.05"                         # How much to send per drip request
-  decimals: 18                                # Smallest unit precision (18 = 10^-18 of 1 ETH)
-```
+1. Log in to the Custodian web app and switch to the **testnet environment** (look for a testnet toggle or environment selector — testnet data is completely separate from mainnet).
+2. Open the wallet for the chain you want to fund (e.g., your Ethereum wallet).
+3. Click **Deposit** or **Receive** — Custodian shows you the deposit address for that wallet.
+4. Copy the address.
 
-**When would you edit this file?**
-- You want to change the `drip_amount` to send more or less per request.
-- The `rpc_url` for a chain goes down and you want to point it to a different node.
-- A new testnet is announced and you want to add it.
-- You want to update `explorer` after a block explorer changes its URL.
-
-#### Fields that vary by family
-
-Not all entries look like HTETH. Here is what changes across the families you will encounter:
-
-**EVM token** — adds `contract_address`:
-```yaml
-"HTETH:GOUSD":          # Token IDs use "CHAIN:TOKEN" format and must be quoted
-  family: evm
-  blockchain: Ethereum
-  network: holesky
-  rpc_url: https://rpc.holesky.ethpandaops.io
-  explorer: https://holesky.etherscan.io/tx/{tx_hash}
-  native_asset: false   # false = this is a token
-  contract_address: "TBD"  # ERC-20 contract address (TBD = not yet deployed)
-  drip_amount: "10"
-  decimals: 18
-```
-
-**Cosmos native coin** — adds `denom` and `bech32_prefix`:
-```yaml
-TATOM:
-  family: cosmos
-  blockchain: Cosmos Hub
-  network: theta-testnet-001
-  rpc_url: https://rpc.sentry-01.theta-testnet.polypore.xyz
-  explorer: https://explorer.theta-testnet.polypore.xyz/transactions/{tx_hash}
-  native_asset: true
-  drip_amount: "1"
-  decimals: 6
-  denom: uatom            # On-chain denomination (uatom = micro-ATOM, 1 ATOM = 1,000,000 uatom)
-  bech32_prefix: cosmos   # Address prefix — all Cosmos Hub addresses start with "cosmos1..."
-```
-
-**External-faucet chain** — adds `faucet_url`:
-```yaml
-TXRP:
-  family: xrp
-  blockchain: XRP Ledger
-  network: testnet
-  rpc_url: https://s.altnet.rippletest.net:51234
-  faucet_url: https://faucet.altnet.rippletest.net/accounts  # The tool calls this URL for you
-  explorer: https://testnet.xrpl.org/transactions/{tx_hash}
-  native_asset: true
-  drip_amount: "100"
-  decimals: 6
-```
-
-**Solana native** — adds `refill_source` and `funding_method`:
-```yaml
-TSOL:
-  family: solana
-  blockchain: Solana
-  network: devnet
-  refill_source: airdrop         # How this faucet wallet is itself refilled
-  rpc_url: https://api.devnet.solana.com
-  explorer: https://explorer.solana.com/tx/{tx_hash}?cluster=devnet
-  native_asset: true
-  drip_amount: "0.5"
-  decimals: 9
-  funding_method: request_airdrop  # Use Solana's native airdrop RPC call
-```
-
-**UTXO (Bitcoin family)** — adds `coin_type`:
-```yaml
-TBTC4:
-  family: utxo
-  blockchain: Bitcoin
-  network: testnet4
-  rpc_url: https://blockstream.info/testnet/api  # Blockstream REST API
-  explorer: https://blockstream.info/testnet/tx/{tx_hash}
-  native_asset: true
-  drip_amount: "0.001"
-  decimals: 8
-  coin_type: 1    # BIP-44 coin type — determines HD derivation path (1 = Bitcoin testnet)
-```
-
-#### What does `TBD` mean?
-
-Many entries have `rpc_url: TBD` or `contract_address: "TBD"`. This means the chain or token is registered in the config but the tool cannot yet interact with it — the endpoint or contract hasn't been set up. Attempting a drip on a TBD asset will return a clear error message immediately without attempting any network call.
+You will repeat this step at the start of each walkthrough below, for each chain family.
 
 ---
 
-### 2c. Alert Configuration
+### 2b. The Faucet Signing Wallet
 
-Alerts notify you when faucet balances run low. You don't need this to get started — set it up once you are comfortable with basic drip operations.
+This is the wallet the tool uses to sign and send transactions. It is completely separate from your Custodian accounts.
 
-**Step 1:** Copy the template to the config location:
-```bash
-mkdir -p ~/.testnet-faucet
-cp config/alerts.yaml.example ~/.testnet-faucet/alerts.yaml
-```
+**Step 1: Create a new testnet-only wallet**
 
-**Step 2:** Edit `~/.testnet-faucet/alerts.yaml`. The file has four channels:
+You need a 12- or 24-word **seed phrase** (also called a mnemonic). Generate one from any wallet app — MetaMask is the easiest:
+1. Install [MetaMask](https://metamask.io/) in your browser.
+2. Click **Create a new wallet** and follow the prompts.
+3. When MetaMask shows the 12-word phrase, write it down somewhere safe.
 
-| Channel | What it does | When to enable |
-|---------|-------------|---------------|
-| `log` | Writes alerts to `~/.testnet-faucet/alerts.log` (rotates daily, keeps 30 days) | Always on by default — no action needed |
-| `slack` | Posts to a Slack channel via incoming webhook | If your team uses Slack |
-| `webhook` | HTTP POST to any URL (works for Discord, PagerDuty, custom endpoints) | For any webhook-capable service |
-| `email` | Sends via SMTP | If you prefer email notifications |
+This wallet is only for the faucet tool. Never fund it with real assets.
 
-To enable Slack alerts, edit the file:
-```yaml
-slack:
-  enabled: true
-  webhook_url: https://hooks.slack.com/services/YOUR/ACTUAL/WEBHOOK
-```
+> **Term: Seed phrase / mnemonic** — A human-readable encoding of a private key, standardised as BIP-39. From one seed phrase, the tool derives correct wallet addresses for every supported chain family. This is why a single `FAUCET_MNEMONIC` covers EVM, Cosmos, Bitcoin, and more — each family uses a different derivation path from the same root key. [→ Primer §4](blockchain-primer.md#4-addresses-and-wallets)
 
----
+> **Security rule:** Never commit this variable to version control. Never reuse a mnemonic from a wallet holding real funds. Testnet coins have no value, but building safe habits now matters.
 
-## 3. Orientation: Read-Only Commands
-
-Before sending any tokens, run these commands to understand what the tool knows about and what state it's in. None of these make network calls that cost anything.
-
-### Browse supported assets
-
-```bash
-faucet list
-```
-
-Prints a table of all 144 assets: their ID, family, blockchain, network, and whether they're a native coin or token.
-
-```bash
-faucet list --family evm
-```
-
-Filters to one family. Try `--family cosmos`, `--family solana`, etc.
-
-### Check faucet wallet balances
-
-```bash
-faucet status
-```
-
-For each native asset, queries the RPC node and prints the faucet wallet's current balance. This tells you which chains are ready to send and which are empty.
-
-```bash
-faucet status --family evm
-```
-
-Filters to one family — useful when you only care about EVM chains.
-
-> **First run:** If you haven't set `FAUCET_MNEMONIC` yet, status will print "no wallet configured" for most assets. That's expected.
-
-### Color-coded dashboard
-
-```bash
-faucet dashboard
-```
-
-Shows the same balance information as `status` but with color-coded status indicators:
-- **FUNDED** (green) — balance is healthy (at least 2x the drip amount)
-- **LOW** (yellow) — balance is below 2x the drip amount; needs refilling
-- **ERROR** (red) — could not fetch balance (RPC down, no wallet configured, etc.)
-
----
-
-## 4. Walkthrough 1 — EVM (representative: HTETH)
-
-**Covers:** 72 assets — Ethereum (Holesky), Arbitrum (Sepolia), Base (Sepolia), Polygon (Amoy), Optimism (Sepolia), BNB Smart Chain (testnet), Avalanche C-Chain (Fuji), and more.
-
-**Why these are the same:** All EVM chains use identical address formats (`0x...`), the same JSON-RPC protocol, and the same transaction signing algorithm. Once you have done this walkthrough for HTETH, you can drip any EVM asset by simply changing the asset ID.
-
-### Step 1: Generate your faucet wallet address
-
-Set your mnemonic (use a test-only mnemonic — never a real one):
+**Step 2: Set the mnemonic for your terminal session**
 
 ```bash
 export FAUCET_MNEMONIC="word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
 ```
 
-Then ask the tool to derive and display the EVM faucet address:
+This stays set for the current terminal session. You'll need to re-run it if you open a new terminal window.
+
+**Step 3: Confirm the tool sees it**
 
 ```bash
-faucet init evm
+uv run faucet init evm
 ```
 
-**Output:** A table listing all EVM chains and the single `0x...` address that serves all of them (all EVM chains share the same derivation path). Copy this address — you will use it in the next step.
+If the mnemonic is set correctly, you'll see a derived `0x...` address for your faucet wallet on EVM chains. If you see "no wallet configured," re-run the `export` command.
 
-**Why one address for all EVM chains?** All EVM chains use the same key format and derivation path. Your `0x...` address on Ethereum Holesky is the same string as on Arbitrum Sepolia or Polygon Amoy — they are different networks, but the address format is identical. What changes is which RPC endpoint the tool talks to.
+---
 
-### Step 2: Fund the faucet wallet on Holesky
+### 2c. The Asset Registry (chains.yaml)
 
-The faucet tool sends tokens *from* its own wallet. Before it can send to anyone, its wallet needs tokens.
+`config/chains.yaml` defines all 144 testnet assets the tool supports. You generally do not need to edit it — it comes pre-configured. But understanding its structure helps you interpret command output and troubleshoot issues.
 
-1. Go to a Holesky testnet faucet. Public options include:
+Here is the entry for `HTETH` (Holesky testnet ETH), annotated:
+
+```yaml
+HTETH:                                        # Asset ID — used in all CLI commands
+  family: evm                                 # Chain family — determines which handler runs
+  blockchain: Ethereum                        # Human-readable chain name (display only)
+  network: holesky                            # Which testnet
+  rpc_url: https://rpc.holesky.ethpandaops.io # Node the tool connects to
+  explorer: https://holesky.etherscan.io/tx/{tx_hash}  # Block explorer URL template
+  native_asset: true                          # true = coin, false = token
+  drip_amount: "0.05"                         # Amount sent per drip
+  decimals: 18                                # 10^-18 of 1 ETH = 1 wei
+```
+
+> **Term: RPC URL** — The network address of a blockchain node. The tool sends transactions to this endpoint and reads chain state from it. If this URL is down, drips on that chain will fail.
+
+> **Term: Block explorer** — A website for browsing blockchain data: transactions, addresses, balances. After a successful drip, the tool prints an explorer link so you can verify the transaction landed. [→ Primer §1](blockchain-primer.md#1-what-is-a-blockchain)
+
+**What does `TBD` mean?** Many entries have `rpc_url: TBD` or `contract_address: "TBD"`. This means the asset is registered but not yet operational. Attempting to drip a TBD asset returns a clear error immediately — no network call is made.
+
+---
+
+### 2d. Alert Configuration
+
+Alerts notify you when faucet balances run low. Skip this for now and return to it after you've completed the walkthroughs.
+
+> See [Section 10: Monitoring and Alerts](#10-monitoring-and-alerts).
+
+---
+
+## 3. Orientation: Explore the Tool
+
+Before sending any tokens, run these read-only commands. None of these send anything or modify any blockchain.
+
+### 3.1 Browse all supported assets
+
+```bash
+uv run faucet list
+```
+
+You'll see all 144 assets: ID, family, blockchain, network, and type (coin or token).
+
+**Try filtering by family:**
+```bash
+uv run faucet list --family evm
+uv run faucet list --family cosmos
+uv run faucet list --family solana
+```
+
+> **Notice** how many EVM chains there are (72). They all use the same handler code because they share the same underlying technology — the Ethereum Virtual Machine. One code path, dozens of networks. [→ Primer §6, EVM Family](blockchain-primer.md#6-chain-families)
+
+### 3.2 Check faucet wallet balances
+
+```bash
+uv run faucet status
+```
+
+For each native asset, this queries the blockchain and shows the faucet wallet's current balance. Since you haven't funded the wallet yet, most will show zero or "no wallet configured." That's expected — revisit this after each walkthrough.
+
+```bash
+uv run faucet status --family evm
+```
+
+### 3.3 View the color-coded dashboard
+
+```bash
+uv run faucet dashboard
+```
+
+Same as `status`, with color coding:
+- **FUNDED** (green) — balance is at least 2× the drip amount
+- **LOW** (yellow) — balance is below 2× the drip amount
+- **ERROR** (red) — could not fetch balance (node down, no wallet configured, etc.)
+
+---
+
+## 4. Walkthrough 1 — EVM (representative: HTETH)
+
+**What you'll learn:**
+- Why one address serves all 72 EVM chains
+- How to fund a faucet wallet from a public testnet faucet
+- How to send a drip and verify it on a block explorer
+- How the rate limiter protects the faucet wallet
+
+> **New to EVM?** Read [Primer §6 — EVM Family](blockchain-primer.md#6-chain-families) first. Key concept: Ethereum, Arbitrum, Base, Polygon, Optimism, and dozens more all share the same address format, signing algorithm, and RPC protocol. One piece of handler code covers all of them.
+
+**Covers:** 72 assets — Ethereum (Holesky), Arbitrum (Sepolia), Base (Sepolia), Polygon (Amoy), Optimism (Sepolia), BNB Smart Chain (testnet), Avalanche C-Chain (Fuji), and more.
+
+---
+
+### Step 1: Get your Custodian EVM deposit address
+
+1. In the Custodian web app, switch to the **testnet environment**.
+2. Open your **Ethereum testnet wallet**.
+3. Click **Deposit** to view the deposit address.
+4. Copy the address — it starts with `0x` and is 42 characters long.
+
+> **Why one address for all EVM chains?** Your `0x...` address is the same string on Ethereum Holesky, Arbitrum Sepolia, Base Sepolia, and every other EVM chain. The address format is universal across the EVM family. What changes between chains is only which RPC endpoint the tool connects to.
+
+---
+
+### Step 2: Find your faucet wallet's EVM address
+
+```bash
+uv run faucet init evm
+```
+
+This derives and displays the EVM address for your faucet signing wallet. All EVM chains share the same address — you'll see it repeated across the table.
+
+**Copy this address.** You'll use it in the next step to fund the faucet wallet from a public faucet.
+
+---
+
+### Step 3: Fund the faucet wallet
+
+The faucet tool sends tokens *from* its wallet. Before it can send to anyone, its wallet needs funds.
+
+1. Go to a free Holesky testnet ETH faucet:
    - [Google Cloud Web3 Holesky Faucet](https://cloud.google.com/application/web3/faucet/ethereum/holesky)
    - [Alchemy Holesky Faucet](https://www.alchemy.com/faucets/ethereum-holesky)
-2. Paste the `0x...` address from Step 1.
-3. Request testnet ETH (typically 0.1–1 ETH depending on the faucet).
-4. Wait a minute for the transaction to confirm.
+2. Paste the **faucet wallet address** from Step 2 (the `0x...` you copied — not your Custodian address).
+3. Request testnet ETH — typically 0.1–1 ETH depending on the faucet.
+4. Wait about a minute for the transaction to confirm on-chain.
 
-Verify the wallet received funds:
+> **Term: Transaction confirmation** — After you submit a transaction, validators include it in the next block. Once included, it's "confirmed." Most testnets confirm within seconds to a minute. You can watch the transaction appear on a block explorer in real time. [→ Primer §1](blockchain-primer.md#1-what-is-a-blockchain)
 
+**Verify the funding worked:**
 ```bash
-faucet status --family evm
+uv run faucet status --family evm
 ```
 
-You should see a non-zero balance for `HTETH`.
+You should see a non-zero balance for `HTETH`. If it still shows zero, wait another minute and try again.
 
-### Step 3: Get a test destination address
-
-You need a separate address to *receive* the drip — think of it as a developer's test wallet.
-
-If you don't have one, the easiest way is to install [MetaMask](https://metamask.io/) in your browser and create a new wallet. MetaMask shows your address at the top of the popup. Make sure to switch the network to "Holesky testnet" in MetaMask's network selector.
-
-For this walkthrough, we'll use a placeholder — replace `0xYOUR_TEST_ADDRESS` with your actual address in every command below.
+---
 
 ### Step 4: Validate without sending (dry run)
 
+Before sending your first real drip, use `--dry-run` to validate everything without touching the blockchain:
+
 ```bash
-faucet drip HTETH 0xYOUR_TEST_ADDRESS --dry-run
+uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS --dry-run
 ```
 
-A dry run validates the address format and checks the rate limiter but does not send anything. If the address is invalid, you will see an error here rather than a failed transaction.
+Replace `0xYOUR_Custodian_ADDRESS` with the Custodian deposit address from Step 1.
 
 **Expected output:**
 ```
-[DRY RUN] Would send 0.05 HTETH to 0xYOUR_TEST_ADDRESS
+[DRY RUN] Would send 0.05 HTETH to 0xYOUR_Custodian_ADDRESS
 ```
+
+A dry run checks:
+- The address format is valid for this chain family
+- The rate limiter isn't blocking this address
+
+It does **not** check your faucet balance or connect to the blockchain.
+
+---
 
 ### Step 5: Send the drip
 
 ```bash
-faucet drip HTETH 0xYOUR_TEST_ADDRESS
+uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS
 ```
 
-**Expected output (success):**
+**Expected output:**
 ```
-✓ Sent 0.05 HTETH to 0xYOUR_TEST_ADDRESS
+✓ Sent 0.05 HTETH to 0xYOUR_Custodian_ADDRESS
   TX: 0xabc123...
   Explorer: https://holesky.etherscan.io/tx/0xabc123...
 ```
 
-Click the explorer link to see the transaction on Holesky Etherscan.
+> **If the drip fails:** The tool retries automatically — up to 3 times with exponential backoff (waits 1s, then 2s, then 4s). If all three fail, it prints the last error. See [Section 12: Troubleshooting](#12-troubleshooting).
 
-> **If the drip fails:** The tool retries up to 3 times with exponential backoff (waits 1s, then 2s, then 4s between attempts). If all three attempts fail, it prints the last error. Common causes are covered in the [Troubleshooting](#12-troubleshooting) section.
+---
 
-### Step 6: Verify rate limiting
+### Step 6: Verify the transaction
 
-Try dripping again immediately:
+**On the block explorer:** Click the Explorer link in the output. You'll land on Holesky Etherscan showing the transaction details — sender, recipient, amount, and confirmation status.
 
-```bash
-faucet drip HTETH 0xYOUR_TEST_ADDRESS
-```
+**In Custodian:** Open your Ethereum testnet wallet — you should see the 0.05 ETH arrive in your transaction history.
 
-You will see a message like:
-```
-Rate limited: HTETH to 0xYOUR_TEST_ADDRESS — 287 seconds remaining
-```
+> **Term: Transaction hash (tx hash)** — A unique fingerprint for a single transaction. No two transactions share the same hash. It's how you look up a specific transaction on a block explorer. The faucet tool always prints one after a successful drip. [→ Primer §1](blockchain-primer.md#1-what-is-a-blockchain)
 
-The 5-minute (300-second) cooldown is per-asset per-address. It prevents accidentally draining the faucet wallet. The cooldown resets after 5 minutes or after you use a different destination address.
+---
 
-### Step 7: Try another EVM chain
+### Step 7: See the rate limiter in action
 
-The exact same steps work for any EVM asset. To drip on Arbitrum Sepolia instead:
+Try sending to the same Custodian address immediately:
 
 ```bash
-faucet drip TARBETH 0xYOUR_TEST_ADDRESS
+uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS
 ```
 
-The address format is identical. The only difference is the tool connects to Arbitrum's RPC and the explorer link goes to Arbiscan. First make sure to fund your faucet wallet on Arbitrum via the Arbitrum Sepolia faucet.
+**Expected output:**
+```
+Rate limited: HTETH to 0xYOUR_Custodian_ADDRESS — 287 seconds remaining
+```
 
-### Step 8: Token drips (EVM tokens)
+> **Why rate limiting?** The faucet wallet holds a limited supply of testnet ETH. Without limits, one address could drain it in seconds. The 5-minute cooldown is per-asset per-address — so you can drip a different asset or a different address immediately. The cooldown resets after 5 minutes or after you switch to a different destination.
 
-EVM tokens (like USDC, USDT) use the colon notation: `HTETH:GOUSD` means the GOUSD token on Holesky Ethereum.
+---
+
+### Step 8: Try another EVM chain
+
+The exact same process works for any EVM asset — only the asset ID changes.
+
+First, fund your faucet wallet on Arbitrum Sepolia (from [Arbitrum Sepolia faucet](https://faucet.quicknode.com/arbitrum/sepolia)). Then:
 
 ```bash
-faucet drip HTETH:GOUSD 0xYOUR_TEST_ADDRESS
+uv run faucet drip TARBETH 0xYOUR_Custodian_ADDRESS
 ```
 
-> **Important:** Most EVM token entries currently show `contract_address: "TBD"` in `chains.yaml`, meaning the token contracts haven't been deployed on testnet yet. The drip will return an error like `contract address is TBD`. This is expected — the tool is under active development and tokens are added over time.
->
-> When a contract address is properly configured, the token drip works the same as a native drip, except: the recipient needs a small amount of HTETH in their wallet to pay for the gas fee of the ERC-20 transfer. If their ETH balance is zero, the tool will warn you.
+The Custodian address is identical to the Holesky one — same `0x...` string. What changes is the tool connects to Arbitrum's RPC and the explorer link goes to Arbiscan.
+
+---
+
+### Step 9: Token drips (optional)
+
+EVM tokens use colon notation: `HTETH:GOUSD` means the GOUSD token on Holesky Ethereum.
+
+```bash
+uv run faucet drip HTETH:GOUSD 0xYOUR_Custodian_ADDRESS
+```
+
+> **Most EVM token entries show `contract_address: "TBD"`** in `chains.yaml` — the token contracts haven't been deployed on testnet yet. You'll get an immediate error, which is expected. When a contract is live, the token drip works identically to a native drip — except the recipient needs a small ETH balance to pay the gas fee for the ERC-20 transfer.
+
+> **Learn more:** [Native coins vs tokens → Primer §3](blockchain-primer.md#3-native-coins-vs-tokens)
 
 ---
 
 ## 5. Walkthrough 2 — Solana (representative: TSOL)
 
+**What you'll learn:**
+- How Solana devnet's built-in airdrop API works — no pre-funding needed for native SOL
+- What Solana addresses look like and how they differ from EVM
+- The difference between native SOL drips and SPL token drips
+
+> **New to Solana?** Read [Primer §6 — Solana Family](blockchain-primer.md#6-chain-families). Key concept: Solana has a completely different architecture from EVM chains — different address format, different transaction model, and its own devnet with a built-in free airdrop endpoint.
+
 **Covers:** 12 assets — native SOL and SPL tokens on Solana devnet.
 
-**Key difference from EVM:** Dripping native SOL does not require the faucet wallet to have any balance first. Solana devnet has a built-in `requestAirdrop` RPC call that the tool uses directly — the tool is the client, not the sender. SPL tokens (like TSOL:USDC) *do* require a funded faucet wallet and a separate keypair.
+**Key difference from EVM:** For native SOL, you do **not** need to pre-fund the faucet wallet. Solana devnet has a built-in `requestAirdrop` RPC method that the tool calls directly on your behalf.
 
-### Step 1: Set up Solana credentials
+---
 
-You have two options:
+### Step 1: Get your Custodian Solana deposit address
 
-**Option A — Solana keypair (preferred):**
-```bash
-export FAUCET_SOLANA_KEYPAIR="your-base58-encoded-64-byte-keypair"
-```
-A Solana keypair is a base58 string. You can generate one with the Solana CLI (`solana-keygen new`) or export one from a wallet.
+1. In the Custodian web app, open your **Solana testnet wallet**.
+2. Click **Deposit** to view the deposit address.
+3. Copy the address — it's a 44-character Base58 string with no `0x` prefix.
 
-**Option B — Use the shared mnemonic:**
-```bash
-export FAUCET_MNEMONIC="your twelve word mnemonic phrase here"
-```
+> **Term: Base58** — An encoding format used by Solana and Bitcoin. It converts binary data into human-readable text, excluding visually ambiguous characters like `0`, `O`, `l`, and `I`. A Solana address looks like `7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q`. [→ Primer §4](blockchain-primer.md#4-addresses-and-wallets)
 
-### Step 2: Find your Solana faucet address
+---
+
+### Step 2: Drip native SOL (no pre-funding needed)
 
 ```bash
-faucet init solana
+uv run faucet drip TSOL YOUR_Custodian_SOLANA_ADDRESS
 ```
 
-**Output:** Your Solana faucet address (a 44-character base58 string like `7v91N7iZ...`) and a suggested airdrop command.
-
-### Step 3: Drip native SOL
-
-```bash
-faucet drip TSOL 7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q
-```
-
-Replace the address with your actual Solana test wallet address (use Phantom wallet or `solana-keygen` to generate one).
+Replace `YOUR_Custodian_SOLANA_ADDRESS` with the address from Step 1.
 
 **Expected output:**
 ```
@@ -477,66 +411,91 @@ Replace the address with your actual Solana test wallet address (use Phantom wal
   Explorer: https://explorer.solana.com/tx/5K7bBw...?cluster=devnet
 ```
 
-**Why no pre-funding?** Behind the scenes, the tool called `https://api.devnet.solana.com` with a `requestAirdrop` RPC call. Solana devnet gives out SOL for free via this API — the tool is just a convenient wrapper. The faucet wallet address is not involved at all for native SOL.
+> **What just happened?** The tool called `requestAirdrop` on Solana's devnet RPC (`https://api.devnet.solana.com`). Solana's own devnet infrastructure credited SOL directly to your address — the faucet signing wallet was not involved at all. [→ Primer §5](blockchain-primer.md#5-testnets-and-faucets)
 
-**Rate limit:** SOL airdrops have a 1-minute cooldown (vs 5 minutes for self-funded assets). Solana's airdrop API has its own limits; if you hit them, wait a minute and try again.
+**Rate limit:** SOL airdrops have a 1-minute cooldown. Solana's airdrop API has its own server-side limits too; if you hit them, wait a minute and try again.
 
-### Step 4: SPL token drips
+---
 
-SPL tokens (e.g., `TSOL:USDC`) are a different story. The tool must transfer tokens from its own wallet, so:
-1. The faucet keypair must be set.
-2. The faucet wallet must hold the SPL token.
-3. `mint_address` in `chains.yaml` must not be `"TBD"`.
+### Step 3: Verify in Custodian
+
+Open your Solana testnet wallet in Custodian — you should see the 0.5 SOL arrive. Click the transaction to open it on the Solana explorer.
+
+---
+
+### Step 4: SPL token drips (optional, advanced)
+
+SPL tokens (e.g., `TSOL:USDC`) require the faucet wallet to hold and transfer the token — unlike native SOL, the devnet airdrop API doesn't cover tokens.
 
 ```bash
-faucet drip TSOL:USDC 7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q
+uv run faucet drip TSOL:USDC YOUR_Custodian_SOLANA_ADDRESS
 ```
 
-Most SPL token entries currently have `mint_address: "TBD"` (tokens not yet deployed on devnet). When that is the case, the drip returns an immediate error — it does not waste a network call.
+Most SPL entries have `mint_address: "TBD"` — the contracts haven't been deployed on devnet yet. You'll get an immediate error, which is expected.
+
+> **Term: SPL token** — Solana's equivalent of ERC-20. SPL stands for Solana Program Library. Just as ERC-20 tokens are created by smart contracts on Ethereum, SPL tokens are created by programs on Solana. [→ Primer §3](blockchain-primer.md#3-native-coins-vs-tokens)
 
 ---
 
 ## 6. Walkthrough 3 — Cosmos (representative: TATOM)
 
+**What you'll learn:**
+- How the Cosmos bech32 address prefix system works — the same key produces different-looking addresses on each chain
+- How to fund a Cosmos faucet wallet through a Discord faucet channel
+- How address validation catches mismatched prefixes before wasting a transaction
+
+> **New to Cosmos?** Read [Primer §6 — Cosmos Family](blockchain-primer.md#6-chain-families). Key concept: Cosmos is an ecosystem of independent blockchains sharing the same SDK. Each chain has a unique address prefix (`cosmos1`, `osmo1`, `sei1`, etc.), but one mnemonic derives valid addresses for all of them.
+
 **Covers:** 14 assets — Cosmos Hub (ATOM), Osmosis (OSMO), Sei, Injective, Celestia, Provenance, and more.
 
-**Key difference from EVM:** Each Cosmos chain has a different *address prefix* (called bech32 prefix). The same key material (mnemonic) derives completely different-looking addresses for each chain: `cosmos1abc...` for Cosmos Hub, `osmo1abc...` for Osmosis, `sei1abc...` for Sei, and so on. These are all the same underlying key, just displayed with different prefixes.
+---
 
-### Step 1: Set up Cosmos credentials
+### Step 1: Get your Custodian Cosmos Hub deposit address
 
-```bash
-export FAUCET_MNEMONIC="your twelve word mnemonic phrase here"
-```
+1. In the Custodian web app, open your **Cosmos Hub testnet wallet**.
+2. Click **Deposit** to view the deposit address.
+3. Copy the address — it starts with `cosmos1`.
 
-### Step 2: See all your Cosmos addresses
+> **Term: Bech32 prefix** — The chain-specific prefix at the start of a Cosmos address. `cosmos1...` is Cosmos Hub; `osmo1...` is Osmosis; `sei1...` is Sei. The same underlying private key produces different-looking addresses depending on which prefix is applied. [→ Primer §6](blockchain-primer.md#6-chain-families)
 
-```bash
-faucet init cosmos
-```
+---
 
-**Output:** A table with one row per Cosmos chain, showing:
-- The chain name
-- The bech32 prefix (e.g., `cosmos`, `osmo`, `sei`)
-- Your derived address for that chain
+### Step 2: See all your Cosmos faucet wallet addresses
 
-Even though each address looks different, they all come from the same mnemonic.
-
-### Step 3: Fund the Cosmos Hub faucet wallet
-
-Find the `cosmos1...` address from the table. Fund it from the Cosmos Hub testnet faucet. The official Cosmos testnet faucet is found in the Cosmos Discord server (`#🚰 | faucet` channel in the Cosmos Hub validators server).
-
-Verify:
-```bash
-faucet status --family cosmos
-```
-
-### Step 4: Drip TATOM
+One mnemonic derives a different-looking address for each Cosmos chain. See them all at once:
 
 ```bash
-faucet drip TATOM cosmos1abcdefghijklmnopqrstuvwxyz123456789abc
+uv run faucet init cosmos
 ```
 
-Replace the address with a Cosmos Hub testnet address of your choice. All Cosmos Hub addresses start with `cosmos1`.
+**Output:** A table with one row per Cosmos chain, showing the bech32 prefix and derived faucet address. Notice how each address looks different (`cosmos1...`, `osmo1...`, `sei1...`) even though they all come from the same mnemonic phrase.
+
+---
+
+### Step 3: Fund the faucet wallet on Cosmos Hub
+
+1. From the `faucet init cosmos` output, copy the `cosmos1...` faucet wallet address.
+2. Join the [Cosmos Hub Discord server](https://discord.gg/cosmosnetwork).
+3. Go to the `#🚰 | faucet` channel in the Cosmos Hub validators server.
+4. Post your `cosmos1...` address to request testnet ATOM.
+5. Wait about a minute for the transaction to confirm.
+
+**Verify:**
+```bash
+uv run faucet status --family cosmos
+```
+
+You should see a non-zero balance for `TATOM`.
+
+---
+
+### Step 4: Send the drip
+
+```bash
+uv run faucet drip TATOM YOUR_Custodian_COSMOS_ADDRESS
+```
+
+Replace `YOUR_Custodian_COSMOS_ADDRESS` with the `cosmos1...` address from Step 1.
 
 **Expected output:**
 ```
@@ -545,117 +504,157 @@ Replace the address with a Cosmos Hub testnet address of your choice. All Cosmos
   Explorer: https://explorer.theta-testnet.polypore.xyz/transactions/A1B2C3...
 ```
 
-### Step 5: Drip on another Cosmos chain
+---
 
-To drip Osmosis testnet tokens:
+### Step 5: Verify in Custodian
+
+Open your Cosmos Hub testnet wallet in Custodian — you should see the 1 ATOM arrive.
+
+> **Term: uATOM** — Cosmos stores amounts in micro-units on-chain. 1 ATOM = 1,000,000 uATOM. The `decimals: 6` field in `chains.yaml` tells the tool the conversion factor. You configure `drip_amount: "1"` (in ATOM), and the tool converts it to 1,000,000 uATOM for the transaction.
+
+---
+
+### Step 6: Drip on another Cosmos chain
+
+1. In Custodian, open your **Osmosis testnet wallet** and copy its deposit address (starts with `osmo1`).
+2. Fund your faucet wallet on Osmosis — each Cosmos chain is an independent network, so each needs separate funding.
+3. Send the drip:
 
 ```bash
-faucet drip TOSMO osmo1abcdefghijklmnopqrstuvwxyz123456789abc
+uv run faucet drip TOSMO YOUR_Custodian_OSMOSIS_ADDRESS
 ```
 
-The address must start with `osmo1`. If you give an address with the wrong prefix (e.g., giving a `cosmos1...` address when dripping `TOSMO`), the tool will reject it at the address validation step before attempting any transaction.
+> **Address matching is enforced:** If you give a `cosmos1...` address when dripping `TOSMO`, the tool rejects it at validation before attempting any transaction. This protects you from accidentally sending to the wrong network — a mistake that would result in unrecoverable lost funds on mainnet.
 
 ---
 
 ## 7. Walkthrough 4 — External-Faucet Chains (representative: TXRP)
 
-**Covers:** XRP (`TXRP`), Stellar (`TXLM`), Sui (`TSUI`), Aptos (`TAPT`).
+**What you'll learn:**
+- How external-faucet chains work — the tool calls the chain's own faucet API rather than signing a local transaction
+- Why no pre-funding is needed for native drips
+- Why the rate limit is 24 hours instead of 5 minutes
 
-**Key difference from all other families:** For native coin drips on these chains, the tool does **not** sign a transaction from its own wallet. Instead, it calls an external faucet API on the chain's testnet. The tool acts as a client that requests tokens from that external service on your behalf.
+> **Covers:** XRP (`TXRP`), Stellar (`TXLM`), Sui (`TSUI`), Aptos (`TAPT`).
+
+**Key difference from all other families:** For native coin drips, the tool does **not** sign a transaction from its own wallet. Instead, it sends an HTTP POST request to the chain's own testnet faucet API. You're using the tool as a client that requests tokens from that external service.
 
 This means:
-- You do not need to pre-fund the faucet wallet for native drips.
-- The rate limit is 24 hours (the external faucet's own rate limit window), not 5 minutes.
-- The `faucet_url` field in `chains.yaml` tells the tool which external API to call.
+- You do **not** need to pre-fund the faucet wallet
+- The rate limit is **24 hours** (the external faucet's own limit window), not 5 minutes
+- The `faucet_url` field in `chains.yaml` is the URL the tool POSTs to
 
-### Step 1: Set credentials (needed for token drips, optional for native)
+> **Learn more:** [What is a faucet? → Primer §5](blockchain-primer.md#5-testnets-and-faucets)
+
+---
+
+### Step 1: Get your Custodian XRP deposit address
+
+1. In the Custodian web app, open your **XRP testnet wallet**.
+2. Click **Deposit** to view the deposit address.
+3. Copy the address — it starts with `r` and is 25–34 characters long.
+
+> **Term: XRP address format** — XRP Ledger uses its own Base58Check encoding. Addresses always start with `r` and look completely different from EVM (`0x...`) or Cosmos (`cosmos1...`) because XRP Ledger was designed independently with its own priorities (fast settlement, low fees for payments). [→ Primer §6](blockchain-primer.md#6-chain-families)
+
+---
+
+### Step 2: Drip native XRP (no pre-funding needed)
 
 ```bash
-export FAUCET_MNEMONIC="your twelve word mnemonic phrase here"
+uv run faucet drip TXRP YOUR_Custodian_XRP_ADDRESS
 ```
 
-### Step 2: Get your XRP faucet address
-
-```bash
-faucet init xrp
+**Expected output:**
+```
+✓ Sent 100 TXRP to rYOUR_ADDRESS...
+  TX: ABC123...
+  Explorer: https://testnet.xrpl.org/transactions/ABC123...
 ```
 
-**Output:** Your XRP testnet address (starts with `r`).
+> **What just happened?** The tool sent a POST request to `https://faucet.altnet.rippletest.net/accounts` — the official XRP Ledger testnet faucet. That service provisioned 100 XRP directly to your address. The faucet signing wallet was not involved.
 
-### Step 3: Drip native XRP
+**Rate limit:** 24 hours — the XRP testnet faucet's own limit per address.
 
-```bash
-faucet drip TXRP rN7n3473SaZBCG4dFL83w7p1W9cgZw6maf
-```
+---
 
-Replace the address with your XRP testnet destination address. XRP addresses start with `r` and are 25–34 characters.
+### Step 3: Verify in Custodian
 
-**What happens behind the scenes:** The tool sends a POST request to `https://faucet.altnet.rippletest.net/accounts` — the official XRP Ledger testnet faucet — which provisions 100 XRP directly to your address. The faucet tool's own wallet is not involved.
+Open your XRP testnet wallet in Custodian — you should see 100 XRP arrive.
 
-**Rate limit:** 24 hours. This reflects the XRP testnet faucet's own limit per address.
+---
 
 ### Step 4: Stellar, Sui, and Aptos
 
-The pattern is identical for the other external-faucet chains. They all have a `faucet_url` in `chains.yaml` and follow the same flow:
+The same pattern works for the other external-faucet chains. Get each address from the corresponding Custodian testnet wallet:
 
 ```bash
-faucet drip TXLM GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGZAKF7FA5WSTJIQYZ
-faucet drip TSUI 0x1234abcd...   # Sui devnet address (0x-prefixed)
-faucet drip TAPT 0x1234abcd...   # Aptos devnet address (0x-prefixed)
+uv run faucet drip TXLM YOUR_Custodian_STELLAR_ADDRESS   # Stellar addresses start with G
+uv run faucet drip TSUI YOUR_Custodian_SUI_ADDRESS        # Sui addresses start with 0x
+uv run faucet drip TAPT YOUR_Custodian_APTOS_ADDRESS      # Aptos addresses start with 0x
 ```
 
-All of these call their respective devnet faucet APIs. No local transaction signing.
+All call their respective devnet faucet APIs. No local transaction signing.
+
+> **Rate limit reminder:** These chains use a 24-hour cooldown instead of 5 minutes because the limit is enforced by the external faucet service — not by the tool.
 
 ---
 
 ## 8. Walkthrough 5 — UTXO / Bitcoin (representative: TBTC4)
 
+**What you'll learn:**
+- The UTXO model — how Bitcoin tracks ownership differently from account-based chains
+- Why Bitcoin transactions show inputs and outputs (not just sender and recipient)
+- How the faucet handles coin selection and change addresses automatically
+
+> **New to UTXO?** Read [Primer §6 — UTXO Family](blockchain-primer.md#6-chain-families). Key concept: Bitcoin doesn't use account balances. It tracks individual unspent outputs (UTXOs). Spending bitcoin means consuming one or more UTXOs and creating new ones — like handing over a $20 bill and receiving $14 in change.
+
 **Covers:** 6 assets — Bitcoin Testnet4 (`TBTC4`), Bitcoin Cash testnet, Litecoin testnet, Dogecoin testnet, and others.
 
-**Key difference from account-based chains:** Bitcoin uses the UTXO (Unspent Transaction Output) model. Instead of an account with a balance, the faucet wallet holds individual "coins" from previous transactions. Sending bitcoin means selecting which coins to spend, combining them, and signing each one individually — the tool handles all of this automatically.
+> **Current status:** Only `TBTC4` has a live RPC endpoint (`blockstream.info`). The remaining 5 UTXO assets have `rpc_url: TBD` and return an immediate error. This walkthrough uses `TBTC4`.
 
-> **Current status:** Of the 6 UTXO assets, only `TBTC4` has a live RPC endpoint (`blockstream.info`). The rest have `rpc_url: TBD` and will return an immediate error. This walkthrough uses TBTC4.
+---
 
-### Step 1: Set credentials
+### Step 1: Get your Custodian Bitcoin testnet deposit address
+
+1. In the Custodian web app, open your **Bitcoin testnet wallet**.
+2. Click **Deposit** to view the deposit address.
+3. Copy the address — it starts with `tb1` (native SegWit) or `m`/`n` (legacy).
+
+> **Term: SegWit vs legacy addresses** — Bitcoin has evolved through several address formats. Native SegWit addresses (`tb1...` on testnet, `bc1...` on mainnet) are the modern standard — more efficient and cheaper to spend. Legacy addresses (`m...` or `n...` on testnet) are older but still valid. Custodian typically provides native SegWit by default.
+
+---
+
+### Step 2: Find your faucet wallet's Bitcoin address
 
 ```bash
-export FAUCET_MNEMONIC="your twelve word mnemonic phrase here"
+uv run faucet init utxo
 ```
 
-Or use a raw hex private key:
-```bash
-export FAUCET_PRIVATE_KEY="0xabc123..."
-```
+You'll see a table of all UTXO assets with the faucet wallet's derived address for each. The `coin_type` column shows the BIP-44 coin type — this determines the HD derivation path and thus the address (Bitcoin testnet uses coin type 1, Litecoin uses 2, etc.).
 
-### Step 2: Find your Bitcoin testnet4 address
+Copy the address in the `TBTC4` row.
 
-```bash
-faucet init utxo
-```
-
-**Output:** A table of all UTXO assets with your derived address for each. The `coin_type` column shows the BIP-44 coin type (1 for Bitcoin testnet, 2 for Litecoin testnet, etc.) — this determines the derivation path and thus the address you get.
-
-For TBTC4, your address will start with `tb1` (native SegWit) or `m`/`n` (legacy).
+---
 
 ### Step 3: Fund the faucet wallet
 
-Go to a Bitcoin testnet4 faucet:
-- [Bitcoin Testnet4 Faucet (mempool.space)](https://mempool.space/testnet4/faucet)
+1. Go to the [Bitcoin Testnet4 Faucet (mempool.space)](https://mempool.space/testnet4/faucet).
+2. Paste the **faucet wallet address** from Step 2.
+3. Request some tBTC (testnet Bitcoin).
+4. Wait for the transaction to confirm.
 
-Paste your `tb1...` or `m...` faucet address and request some tBTC.
-
-Verify:
+**Verify:**
 ```bash
-faucet status --family utxo
+uv run faucet status --family utxo
 ```
 
-### Step 4: Drip
+---
+
+### Step 4: Send the drip
 
 ```bash
-faucet drip TBTC4 tb1qyourdestinationaddress
+uv run faucet drip TBTC4 YOUR_Custodian_BITCOIN_ADDRESS
 ```
-
-Replace with your actual Bitcoin testnet4 destination address (generated from MetaMask with the Bitcoin testnet4 network, or from Sparrow Wallet in testnet mode).
 
 **Expected output:**
 ```
@@ -664,7 +663,15 @@ Replace with your actual Bitcoin testnet4 destination address (generated from Me
   Explorer: https://blockstream.info/testnet/tx/a1b2c3d4...
 ```
 
-The explorer link opens Blockstream, which shows the full transaction including the inputs (UTXOs spent) and outputs (change sent back to the faucet + amount sent to you).
+---
+
+### Step 5: Read a Bitcoin transaction on the block explorer
+
+Click the Explorer link — it opens Blockstream.
+
+> **What you'll see that's different from Etherscan:** Bitcoin transactions show **inputs** (UTXOs being consumed) and **outputs** (UTXOs being created). You'll see at least two outputs: one going to your Custodian address (the drip amount), and one going back to the faucet wallet (the change). This change output is automatic — you can't send a partial UTXO, so you must spend the whole thing and return the remainder to yourself. The faucet tool handles coin selection and change calculation internally.
+
+**In Custodian:** Open your Bitcoin testnet wallet — you should see the 0.001 BTC arrive.
 
 ---
 
@@ -674,18 +681,18 @@ When you need to fund many wallets at once, use `faucet batch` instead of runnin
 
 ### CSV format
 
-The tool accepts two CSV formats:
-
-**Two-column (asset + address per row):**
+**Two-column (different asset per row):**
 ```csv
 # Comments and blank lines are ignored
-HTETH,0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18
-TSOL,7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU
-TATOM,cosmos1hsk6jryyqjfhp5dhc55tc9jtckygx0eph6dd02
+# Use deposit addresses copied from your Custodian testnet wallets
+HTETH,0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18   # Custodian Ethereum Holesky wallet
+TSOL,7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU  # Custodian Solana devnet wallet
+TATOM,cosmos1hsk6jryyqjfhp5dhc55tc9jtckygx0eph6dd02  # Custodian Cosmos Hub testnet wallet
 ```
 
-**Single-column (all addresses get the same asset):**
+**Single-column (same asset, multiple addresses):**
 ```csv
+# Multiple Custodian EVM addresses (e.g. different teams or environments)
 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18
 0x853d46Dd7745D1643B6dA8bE8110F9e7696gZcK29
 0x964e57Ee8856E2754C7c9Cf9a20bF0d8897hAdL30
@@ -695,22 +702,22 @@ TATOM,cosmos1hsk6jryyqjfhp5dhc55tc9jtckygx0eph6dd02
 
 ```bash
 # Two-column CSV
-faucet batch wallets.csv
+uv run faucet batch wallets.csv
 
 # Single-column CSV (specify the asset)
-faucet batch addresses.csv --asset HTETH
+uv run faucet batch addresses.csv --asset HTETH
 ```
 
-**Output:** A results table with one row per address showing:
+**Output:** A results table with one row per address:
 - `OK` — drip succeeded
 - `RATE_LIMITED` — this address was dripped recently, skipped
 - `ERROR` — invalid address, unknown asset, or configuration issue
 - `FAILED` — drip was attempted but the transaction failed
 - `SKIP` — handler not yet implemented for this family
 
-After the table, a summary line shows totals: `Processed 5 rows: 4 succeeded, 1 failed/skipped`.
+After the table: `Processed 5 rows: 4 succeeded, 1 failed/skipped`.
 
-> **Batch vs drip:** `faucet batch` does not retry on failure. If a drip fails, it is marked FAILED and the batch continues. Use `faucet drip` (which retries 3 times) for individual high-priority sends.
+> **Batch vs drip:** `faucet batch` does not retry on failure — if a drip fails, it's marked FAILED and the batch moves on. `faucet drip` retries up to 3 times with exponential backoff. Use `faucet drip` for individual high-priority sends.
 
 ---
 
@@ -719,74 +726,70 @@ After the table, a summary line shows totals: `Processed 5 rows: 4 succeeded, 1 
 ### Check current balances
 
 ```bash
-faucet refill
+uv run faucet refill
 ```
 
-Shows each asset's current balance vs threshold (default: 2× the drip amount). Assets below threshold are flagged LOW with the exact amount needed to top them up.
+Shows each asset's balance versus threshold (default: 2× the drip amount). Assets below threshold are flagged LOW with the exact top-up amount needed.
 
 ```bash
-faucet refill --family evm --threshold 1.0
+uv run faucet refill --family evm --threshold 1.0
 ```
 
-Filters to EVM only and uses a custom threshold of 1.0 (in the asset's native units).
-
-### One-shot check (for cron)
+### One-shot check (for cron jobs and CI)
 
 ```bash
-faucet check
+uv run faucet check
 ```
 
-Like `faucet refill` but exits with **code 1** if any wallet is LOW or ERROR. This is designed for use in cron jobs and CI pipelines where a non-zero exit code triggers an alert.
+Like `refill`, but exits with **code 1** if any wallet is LOW or ERROR:
 
 ```bash
-faucet check && echo "All wallets healthy"
+uv run faucet check && echo "All wallets healthy"
 ```
 
 ### Daemon mode
 
 ```bash
-faucet monitor --interval 1h
+uv run faucet monitor --interval 1h
 ```
 
-Runs `check` in a loop, sleeping for the specified interval between passes. Press `Ctrl-C` to stop. Accepted interval formats: `30m`, `1h`, `6h`, `1d`.
-
-```
-Monitor started — checking every 1h
-[2026-03-28 09:00:00] Pass started
-[2026-03-28 09:00:12] Pass complete: 18 OK, 2 LOW, 1 ERROR
-[2026-03-28 10:00:00] Pass started
-...
-```
+Runs `check` in a loop. Accepted intervals: `30m`, `1h`, `6h`, `1d`. Press Ctrl-C to stop.
 
 ### Setting up alerts
 
-When `check` or `monitor` detects a LOW or ERROR wallet, it sends an alert to each enabled channel in `~/.testnet-faucet/alerts.yaml`.
+**Step 1:** Copy the template:
+```bash
+mkdir -p ~/.testnet-faucet
+cp config/alerts.yaml.example ~/.testnet-faucet/alerts.yaml
+```
+
+**Step 2:** Edit `~/.testnet-faucet/alerts.yaml` to enable the channels you want:
+
+| Channel | When to enable |
+|---------|---------------|
+| `log` | Always on by default — no action needed |
+| `slack` | If your team uses Slack |
+| `webhook` | For Discord, PagerDuty, or any webhook-capable service |
+| `email` | If you prefer email |
 
 **Slack example:**
 ```yaml
-alerts:
-  slack:
-    enabled: true
-    webhook_url: https://hooks.slack.com/services/T000000/B000000/xxxxxxxxxxxx
+slack:
+  enabled: true
+  webhook_url: https://hooks.slack.com/services/YOUR/ACTUAL/WEBHOOK
 ```
 
-Create the webhook URL in your Slack workspace under Apps → Incoming Webhooks.
-
-**Discord example** (uses the generic webhook channel):
+**Discord example:**
 ```yaml
-alerts:
-  webhook:
-    enabled: true
-    url: https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
-    method: POST
+webhook:
+  enabled: true
+  url: https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+  method: POST
 ```
 
-### Setting up a cron job
-
-To run `faucet check` every hour and log the output:
+### Cron job (runs every hour)
 
 ```bash
-# Open crontab editor
 crontab -e
 ```
 
@@ -795,40 +798,27 @@ Add:
 0 * * * * cd /path/to/project && uv run faucet check >> ~/.testnet-faucet/cron.log 2>&1
 ```
 
-Replace `/path/to/project` with the absolute path to your cloned repository.
-
 ### Auto-top-up
 
-For assets configured with `refill_source: airdrop` (currently `TSOL`), `faucet check` automatically attempts a self-drip to the faucet's own address when it detects a LOW balance. The `check` output shows `auto-top: succeeded` or `auto-top: failed` for these assets.
+For assets with `refill_source: airdrop` (currently `TSOL`), `faucet check` automatically attempts a self-refill when it detects a LOW balance. The output shows `auto-top: succeeded` or `auto-top: failed` for these assets.
 
 ---
 
 ## 11. Drip History
 
-Every successful or failed drip is logged to `~/.testnet-faucet/history.log` as a JSON lines file (one JSON object per line).
-
-### View recent drips
+Every drip is logged to `~/.testnet-faucet/history.log` as a JSON lines file (one JSON object per line).
 
 ```bash
-faucet history
+uv run faucet history           # 20 most recent
+uv run faucet history --limit 50
 ```
 
-Shows the 20 most recent drips in a table: time, asset, address (truncated), amount, status (OK/FAIL), and transaction hash or error.
-
-```bash
-faucet history --limit 50
-```
-
-Show the 50 most recent.
-
-### Raw log format
-
-Each line in `~/.testnet-faucet/history.log` looks like:
+Each line looks like:
 ```json
 {"timestamp": "2026-03-28T09:42:11Z", "asset_id": "HTETH", "address": "0x742d35...", "amount": "0.05", "success": true, "tx_hash": "0xabc...", "error": null}
 ```
 
-You can search the raw log:
+Search the raw log:
 ```bash
 grep HTETH ~/.testnet-faucet/history.log
 grep '"success": false' ~/.testnet-faucet/history.log
@@ -840,51 +830,52 @@ grep '"success": false' ~/.testnet-faucet/history.log
 
 ### "Rate limited: X seconds remaining"
 
-The address you are dripping to was dripped recently. Wait for the cooldown to expire, or use a different destination address. Cooldown periods:
-- **5 minutes** — for chains with a self-funded faucet wallet (EVM, Cosmos, UTXO, most others)
-- **1 minute** — for Solana native (uses the airdrop API)
-- **24 hours** — for external-faucet chains (XRP, Stellar, Sui, Aptos)
+Cooldown periods by chain type:
+- **5 minutes** — EVM, Cosmos, UTXO (self-funded faucet wallet)
+- **1 minute** — Solana native (devnet airdrop API)
+- **24 hours** — External-faucet chains (XRP, Stellar, Sui, Aptos)
 
-### "invalid address" or address validation fails
+Use a different destination address, or wait for the cooldown to expire.
 
-The address format does not match the chain family:
-- EVM addresses start with `0x` and are 42 characters (`0x` + 40 hex).
-- Solana addresses are 32–44 base58 characters (no `0x` prefix).
-- Cosmos addresses start with the chain's bech32 prefix (`cosmos1...`, `osmo1...`, etc.).
-- XRP addresses start with `r`.
-- Bitcoin testnet addresses start with `tb1`, `m`, or `n`.
+### "invalid address"
 
-Giving an EVM address to `faucet drip TSOL` will fail address validation — the formats are incompatible.
+Each chain family has its own address format:
+- EVM: `0x` + 40 hex chars (42 total)
+- Solana: 32–44 Base58 chars (no `0x`)
+- Cosmos: chain prefix + `1` + bech32 chars (e.g., `cosmos1...`)
+- XRP: starts with `r`, 25–34 chars
+- Bitcoin testnet: starts with `tb1`, `m`, or `n`
+
+Giving an EVM address to `faucet drip TSOL` will fail — the formats are incompatible.
 
 ### "contract address is TBD" / "rpc_url is TBD"
 
-The asset is registered in `chains.yaml` but the required endpoint or contract hasn't been set up yet. This is expected for many token entries and some native assets. The tool prints a clear error immediately without making any network calls. To check which assets have live configurations:
-
+The asset is registered but not yet operational. This is expected for many entries. To see which assets are currently live:
 ```bash
 grep -v "TBD" config/chains.yaml | grep "rpc_url"
 ```
 
 ### "requires X SDK" / "SDK not installed"
 
-Some chain families (Hedera, Algorand, Flow, Substrate, ICP, etc.) need Python SDKs that are not installed in the default setup. The drip returns a message like `requires hedera-sdk`. These families are under development. Installing the SDK manually may work, but it is not officially supported yet.
+Some families (Hedera, Algorand, Flow, Substrate, ICP) need Python SDKs not installed by default. These are under active development.
 
 ### "no wallet configured"
 
-The environment variable for this chain's credentials is not set. Run `faucet init <family>` — it will tell you exactly which variable to set. Then export the variable and try again.
+The credential variable for this chain isn't set. Run `faucet init <family>` — it will tell you exactly which variable to export.
 
 ### "Drip failed after 3 attempts"
 
-All three retry attempts failed. The last error message explains why. Common causes:
-- The RPC node is temporarily down — try again later.
-- The faucet wallet has insufficient balance — run `faucet status` and refill if needed.
-- Network congestion causing timeouts — wait and retry.
+All retries failed. Common causes:
+- RPC node is temporarily down — try again later
+- Faucet wallet has insufficient balance — run `faucet status` and refill
+- Network congestion causing timeouts — wait and retry
 
-### Dry run shows everything OK but the real drip fails
+### Dry run passes but real drip fails
 
-Dry run validates address format and rate limits but does not connect to the chain. If the real drip fails, check:
-1. Is `faucet status` showing a non-zero balance?
-2. Is the RPC URL in `chains.yaml` reachable? Try `curl <rpc_url>`.
-3. Is the mnemonic/private key correctly set? Run `faucet init <family>` to verify the derived address.
+Dry run doesn't connect to the chain. If the real drip fails:
+1. Check `faucet status` — is the balance non-zero?
+2. Test the RPC endpoint: `curl <rpc_url>`
+3. Verify the mnemonic is set: `faucet init <family>` shows the derived address
 
 ---
 
@@ -897,7 +888,7 @@ Dry run validates address format and rate limits but does not connect to the cha
 | `faucet list` | List all supported assets | `faucet list --family evm` |
 | `faucet init <family>` | Derive faucet address, print funding instructions | `faucet init evm` |
 | `faucet drip <asset> <address>` | Send testnet tokens (retries 3×) | `faucet drip HTETH 0x...` |
-| `faucet drip <assets> <address> --dry-run` | Validate without sending | `faucet drip HTETH 0x... --dry-run` |
+| `faucet drip <asset> <address> --dry-run` | Validate without sending | `faucet drip HTETH 0x... --dry-run` |
 | `faucet drip <a>,<b> <address>` | Drip multiple assets at once | `faucet drip HTETH,TARBETH 0x...` |
 | `faucet batch <csv>` | Bulk drip from CSV file | `faucet batch wallets.csv` |
 | `faucet batch <csv> --asset <id>` | Bulk drip single-column CSV | `faucet batch addrs.csv --asset HTETH` |
@@ -921,18 +912,18 @@ Dry run validates address format and rate limits but does not connect to the cha
 
 ### Workflow Groups
 
-| Group | Asset IDs | Wallet credential | Address format | Pre-fund needed? |
-|-------|-----------|------------------|---------------|-----------------|
-| EVM | `HTETH`, `TARBETH`, `TBASE`, … | `FAUCET_MNEMONIC` or `FAUCET_PRIVATE_KEY` | `0x...` (42 chars) | Yes |
-| Solana native | `TSOL` | None | Base58 (44 chars) | No (uses airdrop API) |
-| Solana tokens | `TSOL:USDC`, … | `FAUCET_SOLANA_KEYPAIR` or `FAUCET_MNEMONIC` | Base58 (44 chars) | Yes |
-| Cosmos | `TATOM`, `TOSMO`, `TSEI`, … | `FAUCET_MNEMONIC` or `FAUCET_PRIVATE_KEY` | `<prefix>1...` | Yes |
-| External faucet | `TXRP`, `TXLM`, `TSUI`, `TAPT` | None | Chain-specific | No (calls external API) |
-| UTXO | `TBTC4` | `FAUCET_MNEMONIC` or `FAUCET_PRIVATE_KEY` | `tb1...` / `m...` / `n...` | Yes |
+| Group | Asset IDs | Wallet credential | Address format | Pre-fund faucet wallet? |
+|-------|-----------|------------------|---------------|------------------------|
+| EVM | `HTETH`, `TARBETH`, `TBASE`, … | `FAUCET_MNEMONIC` | `0x...` (42 chars) | Yes |
+| Solana native | `TSOL` | None | Base58 (44 chars) | No — uses devnet airdrop API |
+| Solana tokens | `TSOL:USDC`, … | `FAUCET_SOLANA_KEYPAIR` | Base58 (44 chars) | Yes |
+| Cosmos | `TATOM`, `TOSMO`, `TSEI`, … | `FAUCET_MNEMONIC` | `<prefix>1...` | Yes |
+| External faucet | `TXRP`, `TXLM`, `TSUI`, `TAPT` | None | Chain-specific | No — calls external API |
+| UTXO | `TBTC4` | `FAUCET_MNEMONIC` | `tb1...` / `m...` / `n...` | Yes |
 
 ### Related Documents
 
-- [Blockchain & Digital Assets Primer](blockchain-primer.md) — foundational concepts
+- [Blockchain & Digital Assets Primer](blockchain-primer.md) — foundational concepts and deeper reading
 - [README](../README.md) — brief setup and command summary
 - [`config/chains.yaml`](../config/chains.yaml) — full asset registry
 - [`config/alerts.yaml.example`](../config/alerts.yaml.example) — alert channel template
