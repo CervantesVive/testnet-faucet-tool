@@ -4,6 +4,55 @@ Known gaps and future work. Items are grouped by effort and dependency.
 
 ---
 
+## Faucet harvester — keep faucet wallets continuously topped off
+
+A background job that hits external faucets on behalf of the tool's own wallets, so
+balances never run dry between runs. Distinct from the existing `_auto_top` in
+`core/monitor.py`, which only handles chains where the handler can self-drip (currently
+just Solana `request_airdrop`). The harvester targets third-party faucet APIs that
+accept a wallet address and dispense coins directly.
+
+- [ ] Extend `chains.yaml` with an optional `harvest_url` field (alongside the existing
+  `faucet_url` used for user-facing drips)
+  - `harvest_url` points to a machine-callable endpoint that accepts a wallet address
+    and tops it up (e.g. Holesky ETH faucets with API keys, Stellar Friendbot, XRP
+    altnet faucet, Sui/Aptos devnet faucets)
+  - Add `harvest_min_balance` (optional float) — only request a top-up when the wallet
+    falls below this level; defaults to `2 × drip_amount` if absent
+
+- [ ] Implement `core/harvester.py`
+  - `harvest_asset(asset_id, cfg, handler) -> HarvestResult` — checks balance, skips if
+    above threshold, POSTs to `harvest_url` with the faucet address, records outcome
+  - `harvest_all(family=None) -> list[HarvestResult]` — iterates native assets with a
+    `harvest_url`, calls `harvest_asset` for each, respects per-asset cooldown (store
+    last-harvest timestamp in the rate-limit SQLite DB under a `harvests` table)
+  - Cooldown should be at least 23 h for external faucets that enforce a 24 h window
+
+- [ ] Add `faucet harvest [--family FAMILY] [--force]` CLI command in `cli.py`
+  - `--force` bypasses the cooldown check (useful after a wallet is drained)
+  - Prints a Rich table: asset | current balance | harvest result | next eligible time
+
+- [ ] Integrate with the monitor daemon (`core/monitor.py` / `faucet monitor`)
+  - Add `--harvest` flag to `faucet monitor`: after each check pass, call `harvest_all()`
+    for any LOW wallet that has a `harvest_url` before firing the low-balance alert
+  - This makes the daemon self-healing: alert only fires if the harvest also failed
+
+- [ ] Tests
+  - Unit-test `harvest_asset` by patching `aiohttp.ClientSession` (same pattern as
+    Phase 4 handler tests in `tests/test_handlers_*.py`)
+  - Integration-test the CLI via `CliRunner`, asserting the results table and exit code
+
+---
+
+## Refactoring
+
+- [ ] Split `config/chains.yaml` (1662 lines) into one file per chain family
+  - Create `config/chains/` directory with files like `evm.yaml`, `solana.yaml`, `cosmos.yaml`, `utxo.yaml`, etc.
+  - Change `core/registry.py`'s `_get_chains_yaml_path()` to glob `config/chains/*.yaml` and merge all dicts
+  - Update `conftest.py`'s restore fixture to handle the directory instead of the single file
+  - Update `tui/data.py`'s `save_chains_yaml()` to write back the correct per-family file (look up asset's `family` field to pick the target file)
+  - Benefit: each file becomes ~50-150 lines instead of 1662; edits are localised and git diffs are readable
+
 ---
 
 ## SDK stubs — handlers that drip but return "SDK not installed"
