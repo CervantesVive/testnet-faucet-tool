@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "testnet-faucet"
 version = "0.1.0"
 description = "Testnet faucet tool"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.1",
