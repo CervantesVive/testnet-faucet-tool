@@ -313,6 +313,3 @@ CLI prints: "Sent 0.05 HTETH - view at https://holesky.etherscan.io/tx/0x..."
 - [Ethereum Testnets Overview (ethereum.org)](https://ethereum.org/en/developers/docs/networks/#ethereum-testnets)
 - [Solana Devnet & Testnet (Solana docs)](https://docs.solana.com/clusters)
 - [Bitcoin Testnet (Bitcoin Wiki)](https://en.bitcoin.it/wiki/Testnet)
-
-### Custodian
-- [Custodian Developer Documentation](https://developers.Custodian.com/)

@@ -16,7 +16,7 @@ A step-by-step guide that combines hands-on Custodian practice with blockchain c
 
 1. [Installation](#1-installation)
 2. [The Two-Wallet Model](#2-the-two-wallet-model)
-   - [2a. Your Custodian Accounts (Destinations)](#2a-your-Custodian-accounts-destinations)
+   - [2a. Your Custodian Accounts (Destinations)](#2a-your-custodian-accounts-destinations)
    - [2b. The Faucet Signing Wallet](#2b-the-faucet-signing-wallet)
    - [2c. The Asset Registry (chains.yaml)](#2c-the-asset-registry-chainsyaml)
    - [2d. Alert Configuration](#2d-alert-configuration)
@@ -281,14 +281,14 @@ You should see a non-zero balance for `HTETH`. If it still shows zero, wait anot
 Before sending your first real drip, use `--dry-run` to validate everything without touching the blockchain:
 
 ```bash
-uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS --dry-run
+uv run faucet drip HTETH 0xYOUR_CUSTODIAN_ADDRESS --dry-run
 ```
 
-Replace `0xYOUR_Custodian_ADDRESS` with the Custodian deposit address from Step 1.
+Replace `0xYOUR_CUSTODIAN_ADDRESS` with the Custodian deposit address from Step 1.
 
 **Expected output:**
 ```
-[DRY RUN] Would send 0.05 HTETH to 0xYOUR_Custodian_ADDRESS
+[DRY RUN] Would send 0.05 HTETH to 0xYOUR_CUSTODIAN_ADDRESS
 ```
 
 A dry run checks:
@@ -302,12 +302,12 @@ It does **not** check your faucet balance or connect to the blockchain.
 ### Step 5: Send the drip
 
 ```bash
-uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS
+uv run faucet drip HTETH 0xYOUR_CUSTODIAN_ADDRESS
 ```
 
 **Expected output:**
 ```
-✓ Sent 0.05 HTETH to 0xYOUR_Custodian_ADDRESS
+✓ Sent 0.05 HTETH to 0xYOUR_CUSTODIAN_ADDRESS
   TX: 0xabc123...
   Explorer: https://holesky.etherscan.io/tx/0xabc123...
 ```
@@ -331,12 +331,12 @@ uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS
 Try sending to the same Custodian address immediately:
 
 ```bash
-uv run faucet drip HTETH 0xYOUR_Custodian_ADDRESS
+uv run faucet drip HTETH 0xYOUR_CUSTODIAN_ADDRESS
 ```
 
 **Expected output:**
 ```
-Rate limited: HTETH to 0xYOUR_Custodian_ADDRESS — 287 seconds remaining
+Rate limited: HTETH to 0xYOUR_CUSTODIAN_ADDRESS — 287 seconds remaining
 ```
 
 > **Why rate limiting?** The faucet wallet holds a limited supply of testnet ETH. Without limits, one address could drain it in seconds. The 5-minute cooldown is per-asset per-address — so you can drip a different asset or a different address immediately. The cooldown resets after 5 minutes or after you switch to a different destination.
@@ -350,7 +350,7 @@ The exact same process works for any EVM asset — only the asset ID changes.
 First, fund your faucet wallet on Arbitrum Sepolia (from [Arbitrum Sepolia faucet](https://faucet.quicknode.com/arbitrum/sepolia)). Then:
 
 ```bash
-uv run faucet drip TARBETH 0xYOUR_Custodian_ADDRESS
+uv run faucet drip TARBETH 0xYOUR_CUSTODIAN_ADDRESS
 ```
 
 The Custodian address is identical to the Holesky one — same `0x...` string. What changes is the tool connects to Arbitrum's RPC and the explorer link goes to Arbiscan.
@@ -362,7 +362,7 @@ The Custodian address is identical to the Holesky one — same `0x...` string. W
 EVM tokens use colon notation: `HTETH:GOUSD` means the GOUSD token on Holesky Ethereum.
 
 ```bash
-uv run faucet drip HTETH:GOUSD 0xYOUR_Custodian_ADDRESS
+uv run faucet drip HTETH:GOUSD 0xYOUR_CUSTODIAN_ADDRESS
 ```
 
 > **Most EVM token entries show `contract_address: "TBD"`** in `chains.yaml` — the token contracts haven't been deployed on testnet yet. You'll get an immediate error, which is expected. When a contract is live, the token drip works identically to a native drip — except the recipient needs a small ETH balance to pay the gas fee for the ERC-20 transfer.
@@ -399,10 +399,10 @@ uv run faucet drip HTETH:GOUSD 0xYOUR_Custodian_ADDRESS
 ### Step 2: Drip native SOL (no pre-funding needed)
 
 ```bash
-uv run faucet drip TSOL YOUR_Custodian_SOLANA_ADDRESS
+uv run faucet drip TSOL YOUR_CUSTODIAN_SOLANA_ADDRESS
 ```
 
-Replace `YOUR_Custodian_SOLANA_ADDRESS` with the address from Step 1.
+Replace `YOUR_CUSTODIAN_SOLANA_ADDRESS` with the address from Step 1.
 
 **Expected output:**
 ```
@@ -428,7 +428,7 @@ Open your Solana testnet wallet in Custodian — you should see the 0.5 SOL arri
 SPL tokens (e.g., `TSOL:USDC`) require the faucet wallet to hold and transfer the token — unlike native SOL, the devnet airdrop API doesn't cover tokens.
 
 ```bash
-uv run faucet drip TSOL:USDC YOUR_Custodian_SOLANA_ADDRESS
+uv run faucet drip TSOL:USDC YOUR_CUSTODIAN_SOLANA_ADDRESS
 ```
 
 Most SPL entries have `mint_address: "TBD"` — the contracts haven't been deployed on devnet yet. You'll get an immediate error, which is expected.
@@ -492,10 +492,10 @@ You should see a non-zero balance for `TATOM`.
 ### Step 4: Send the drip
 
 ```bash
-uv run faucet drip TATOM YOUR_Custodian_COSMOS_ADDRESS
+uv run faucet drip TATOM YOUR_CUSTODIAN_COSMOS_ADDRESS
 ```
 
-Replace `YOUR_Custodian_COSMOS_ADDRESS` with the `cosmos1...` address from Step 1.
+Replace `YOUR_CUSTODIAN_COSMOS_ADDRESS` with the `cosmos1...` address from Step 1.
 
 **Expected output:**
 ```
@@ -521,7 +521,7 @@ Open your Cosmos Hub testnet wallet in Custodian — you should see the 1 ATOM a
 3. Send the drip:
 
 ```bash
-uv run faucet drip TOSMO YOUR_Custodian_OSMOSIS_ADDRESS
+uv run faucet drip TOSMO YOUR_CUSTODIAN_OSMOSIS_ADDRESS
 ```
 
 > **Address matching is enforced:** If you give a `cosmos1...` address when dripping `TOSMO`, the tool rejects it at validation before attempting any transaction. This protects you from accidentally sending to the wrong network — a mistake that would result in unrecoverable lost funds on mainnet.
@@ -561,7 +561,7 @@ This means:
 ### Step 2: Drip native XRP (no pre-funding needed)
 
 ```bash
-uv run faucet drip TXRP YOUR_Custodian_XRP_ADDRESS
+uv run faucet drip TXRP YOUR_CUSTODIAN_XRP_ADDRESS
 ```
 
 **Expected output:**
@@ -588,9 +588,9 @@ Open your XRP testnet wallet in Custodian — you should see 100 XRP arrive.
 The same pattern works for the other external-faucet chains. Get each address from the corresponding Custodian testnet wallet:
 
 ```bash
-uv run faucet drip TXLM YOUR_Custodian_STELLAR_ADDRESS   # Stellar addresses start with G
-uv run faucet drip TSUI YOUR_Custodian_SUI_ADDRESS        # Sui addresses start with 0x
-uv run faucet drip TAPT YOUR_Custodian_APTOS_ADDRESS      # Aptos addresses start with 0x
+uv run faucet drip TXLM YOUR_CUSTODIAN_STELLAR_ADDRESS   # Stellar addresses start with G
+uv run faucet drip TSUI YOUR_CUSTODIAN_SUI_ADDRESS        # Sui addresses start with 0x
+uv run faucet drip TAPT YOUR_CUSTODIAN_APTOS_ADDRESS      # Aptos addresses start with 0x
 ```
 
 All call their respective devnet faucet APIs. No local transaction signing.
@@ -653,7 +653,7 @@ uv run faucet status --family utxo
 ### Step 4: Send the drip
 
 ```bash
-uv run faucet drip TBTC4 YOUR_Custodian_BITCOIN_ADDRESS
+uv run faucet drip TBTC4 YOUR_CUSTODIAN_BITCOIN_ADDRESS
 ```
 
 **Expected output:**
