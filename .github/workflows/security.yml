@@ -26,6 +26,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
-      - run: uv sync --extra dev
+      - run: uv sync --all-extras
 
-      - run: uv run --with pip-audit pip-audit
+      # CVE-2025-69277 (pynacl): fix (1.6.2) only ships wheels for Python 3.14+;
+      # project supports >=3.11. Revisit once the floor moves to 3.14.
+      - run: uv run --with pip-audit pip-audit --ignore-vuln CVE-2025-69277
