@@ -28,6 +28,4 @@ jobs:
 
       - run: uv sync --all-extras
 
-      # CVE-2025-69277 (pynacl): fix (1.6.2) only ships wheels for Python 3.14+;
-      # project supports >=3.11. Revisit once the floor moves to 3.14.
-      - run: uv run --with pip-audit pip-audit --ignore-vuln CVE-2025-69277
+      - run: uv run --with pip-audit pip-audit
